@@ -16,12 +16,23 @@ Ajudar equipes de RH a identificar padrões de saída de colaboradores e prever 
 ````
 employee_attrition_project/
 ├── data/
+│   ├── raw/              
+│   └── processed/         
 ├── notebooks/
-├── src/
-├── dashboards/
+│   └── 01_eda.ipynb      
+├── src/                   
+│   ├── init.py
+│   ├── data_preprocessing.py
+│   ├── modeling.py
+│   └── utils.py
 ├── reports/
-├── requirements.txt
-├── README.md
+│   └── figures/          
+├── dashboards/
+│   └── excel_dashboard.xlsx
+├── outputs/               
+├── requirements.txt      
+├── README.md              
+└── .gitignore
 ````
 
 ## 📊 Etapas do Projeto
