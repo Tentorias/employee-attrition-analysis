@@ -1,0 +1,22 @@
+# Ignorar checkpoints do Jupyter em qualquer lugar
+**/.ipynb_checkpoints/
+
+# Arquivos Python compilados e caches
+*.pyc
+__pycache__/
+
+# Ambientes virtuais
+.env
+venv/
+env/
+.venv/
+
+# Logs
+*.log
+
+# Artefatos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Configurações do editor
+.vscode/
