@@ -1,54 +1,64 @@
 # HR Employee Attrition Analysis & Prediction
 
-Análise e previsão da rotatividade de funcionários com base em dados reais de RH. O projeto envolve exploração de dados (EDA), modelagem preditiva com machine learning e visualização dos resultados em um dashboard no Excel.
+Projeto de análise e predição da rotatividade de funcionários usando dados reais de RH. Inclui EDA (análise exploratória), engenharia de atributos e modelagem preditiva com machine learning.
 
 ## 🔍 Objetivo
-Ajudar equipes de RH a identificar padrões de saída de colaboradores e prever quem pode sair, usando dados históricos.
+Ajudar times de RH a identificar padrões de desligamento e prever possíveis saídas, com base em dados históricos.
 
 ## 🧰 Tecnologias usadas
-- Python 3.10
-- pandas, numpy, seaborn, matplotlib
-- scikit-learn
-- Jupyter Notebook
-- Excel
+- Python 3.10  
+- pandas, numpy, seaborn, matplotlib  
+- scikit-learn, xgboost  
+- Jupyter Notebook  
+- VSCode  
 
 ## 📁 Estrutura do Projeto
-````
-employee_attrition_project/
-├── data/
-│   ├── raw/              
-│   └── processed/         
-├── notebooks/
-│   └── 01_eda.ipynb      
-├── src/                   
-│   ├── init.py
-│   ├── data_preprocessing.py
-│   ├── modeling.py
-│   └── utils.py
-├── reports/
-│   └── figures/          
+```
+EMPLOYEE_ATTRITION_PROJECT/
+├── artifacts/
+│   └── models/
+│       ├── smote_resampler.pkl
+│       ├── threshold_optimizado.pkl
+│       └── xgb_attrition_final.pkl
 ├── dashboards/
-│   └── excel_dashboard.xlsx
-├── outputs/               
-├── requirements.txt      
-├── README.md              
-└── .gitignore
-````
+│   └── .gitkeep
+├── data/
+│   ├── processed/
+│   │   └── employee_attrition_processed.csv
+│   └── raw/
+│       └── WA_Fn-UseC_-HR-Employee-Attrition.csv
+├── notebooks/
+│   ├── eda_attrition_funcionarios.ipynb
+│   └── modeling_ml.ipynb
+├── outputs/
+│   └── .gitkeep
+├── reports/
+│   └── figures/
+├── src/
+│   └── .gitkeep
+├── tests/
+│   └── test_example.py
+├── LICENSE
+└── README.md
+```
 
 ## 📊 Etapas do Projeto
 1. **Coleta de dados** – Dataset público do Kaggle  
-2. **Análise exploratória (EDA)** – Identificação de padrões e insights  
-3. **Modelagem preditiva** – Algoritmo Random Forest  
-4. **Dashboard** – Visualização dos resultados no Excel
+2. **Análise exploratória (EDA)** – Identificação de padrões relevantes  
+3. **Pré-processamento e Feature Engineering**  
+4. **Modelagem preditiva** – XGBoost otimizado com tuning de threshold e balanceamento SMOTE  
+5. **Exportação de modelo treinado** – Para uso futuro em aplicações reais  
 
 ## 📦 Dataset
 [Kaggle: IBM HR Analytics Employee Attrition](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset)
 
 ## 📌 Resultados
-- Principais fatores relacionados à saída dos funcionários
-- Modelo com acurácia de XX% (preencher)
-- Dashboard interativo em Excel
+- Modelo final: XGBoost  
+- F1-Score (classe minoritária): `0.6118`  
+- Principais variáveis associadas à saída: `OverTime`, `Age`, `JobRole`, `EnvironmentSatisfaction`, entre outras  
+- Modelo exportado com `joblib` para uso em produção
 
 ## 📫 Contato
-Seu Nome – [mateuscsq@email.com]  
-LinkedIn – [https://www.linkedin.com/in/mateus-cabral-b25aa3250/]
+**Mateus Cabral**  
+📧 mateuscsq@email.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/mateus-cabral-b25aa3250/)

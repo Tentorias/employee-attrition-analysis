@@ -20,3 +20,6 @@ Thumbs.db
 
 # Configurações do editor
 .vscode/
+
+# Ignorar o ambiente virtual
+.venv/
