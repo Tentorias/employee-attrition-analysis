@@ -58,6 +58,28 @@ EMPLOYEE_ATTRITION_PROJECT/
 - Principais variáveis associadas à saída: `OverTime`, `Age`, `JobRole`, `EnvironmentSatisfaction`, entre outras  
 - Modelo exportado com `joblib` para uso em produção
 
+
+# Clonar o repositório
+git clone <URL>
+cd employee_attrition_project
+
+# Criar e ativar a venv (caso não use poetry shell)
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1  # Windows
+source .venv/bin/activate     # macOS/Linux
+
+# Instalar dependências via Poetry
+poetry install
+
+# Executar testes
+poetry run pytest
+
+# Executar pipeline completo
+poetry run process-data
+poetry run engineer-features
+poetry run train-model
+
+
 ## 📫 Contato
 **Mateus Cabral**  
 📧 mateuscsq@email.com  
