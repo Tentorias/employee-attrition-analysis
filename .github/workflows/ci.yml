@@ -9,23 +9,46 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']  # remover 3.13 se houver conflitos
+      fail-fast: false
 
     steps:
-      - name: Checkout do código
+      - name: Checkout do repositório
         uses: actions/checkout@v3
 
-      - name: Configurar Python
+      - name: Configurar Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - name: Instalar Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: latest
+
+      - name: Cache do Poetry
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: ${{ runner.os }}-poetry-
 
       - name: Instalar dependências
-        run: poetry install
+        run: poetry install --no-interaction --with dev
 
-      - name: Executar testes
-        run: poetry run pytest
+      - name: Rodar pre-commit
+        run: poetry run pre-commit run --all-files
+
+      - name: Executar lint (flake8)
+        run: poetry run flake8 src tests
+
+      - name: Executar testes (pytest)
+        run: poetry run pytest --cov=src
+
+      - name: Publicar no PyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          POETRY_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: poetry publish --build --no-interaction
