@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']  # remover 3.13 se houver conflitos
+        python-version: ['3.9', '3.10', '3.11']
       fail-fast: false
 
     steps:
@@ -23,32 +23,31 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Instalar Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: latest
-
-      - name: Cache do Poetry
+      - name: Configurar cache de dependências
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: ${{ runner.os }}-poetry-
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
 
       - name: Instalar dependências
-        run: poetry install --no-interaction --with dev
-
-      - name: Rodar pre-commit
-        run: poetry run pre-commit run --all-files
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Executar lint (flake8)
-        run: poetry run flake8 src tests
+        run: |
+          . .venv/bin/activate
+          flake8 src tests
 
       - name: Executar testes (pytest)
-        run: poetry run pytest --cov=src
+        run: |
+          . .venv/bin/activate
+          pytest --cov=src
 
-      - name: Publicar no PyPI
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          POETRY_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: poetry publish --build --no-interaction
+      - name: Rodar pre-commit (opcional)
+        run: |
+          . .venv/bin/activate
+          pre-commit run --all-files

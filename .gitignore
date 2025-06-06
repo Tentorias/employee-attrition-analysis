@@ -4,6 +4,7 @@
 # Arquivos Python compilados e caches
 *.pyc
 __pycache__/
+*.py[cod]
 
 # Ambientes virtuais
 .env
@@ -20,6 +21,19 @@ Thumbs.db
 
 # Configurações do editor
 .vscode/
+.idea/
 
 # Ignorar o ambiente virtual
 .venv/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Modelos/séries temporárias
+*.pkl
+*.joblib
+
+# Dados gerados
+data/processed/
+artifacts/
