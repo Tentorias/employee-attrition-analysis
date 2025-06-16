@@ -78,7 +78,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--out-path",
         type=str,
-        default=str(BASE_DIR / "artifacts" / "features_matrix.csv"),
+        default=str(BASE_DIR / "artifacts" / "features" / "features_matrix.csv"),
         help="Onde salvar a matriz de features.",
     )
     args = parser.parse_args()

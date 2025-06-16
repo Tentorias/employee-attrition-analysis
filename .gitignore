@@ -1,10 +1,8 @@
-# Ignorar checkpoints do Jupyter em qualquer lugar
-**/.ipynb_checkpoints/
-
 # Arquivos Python compilados e caches
-*.pyc
 __pycache__/
-*.py[cod]
+*.pyc
+.pytest_cache/
+attrition.egg-info/
 
 # Ambientes virtuais
 .env
@@ -12,28 +10,26 @@ venv/
 env/
 .venv/
 
-# Logs
+# Logs e Cobertura de Testes
 *.log
-
-# Artefatos temporários do sistema
-.DS_Store
-Thumbs.db
+.coverage
+htmlcov/
 
 # Configurações do editor
 .vscode/
 .idea/
 
-# Ignorar o ambiente virtual
-.venv/
+# Artefatos temporários do sistema
+.DS_Store
+Thumbs.db
 
-# Coverage
-.coverage
-htmlcov/
+# Ignorar checkpoints do Jupyter
+**/.ipynb_checkpoints/
 
-# Modelos/séries temporárias
-*.pkl
-*.joblib
+# Ignorar todos os artefatos gerados pelo pipeline
+# Esta é a regra mais importante para resolver o problema de cota do LFS
+/artifacts/
 
-# Dados gerados
-data/processed/
-artifacts/
+# Ignorar dados processados e saídas
+/data/processed/
+/outputs/

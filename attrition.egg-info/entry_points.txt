@@ -1,4 +1,0 @@
-[console_scripts]
-engineer-features = attrition.features.engineer:main
-process-data = attrition.data.process:main
-train-model = attrition.models.train:main
