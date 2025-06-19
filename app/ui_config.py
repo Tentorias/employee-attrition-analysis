@@ -1,0 +1,135 @@
+# app/ui_config.py
+
+# --- DICIONÁRIOS DE MAPEAMENTO ---
+
+# Dicionário para nomes amigáveis
+# Dicionário que mapeia nomes técnicos de colunas para nomes amigáveis (tradução)
+LABEL_MAPPING = {
+    "Age": "Idade",
+    "BusinessTravel": "Frequência de Viagem",
+    "DailyRate": "Valor da Diária (R$)",
+    "Department": "Departamento",
+    "DistanceFromHome": "Distância de Casa (KM)",
+    "Education": "Nível de Educação",
+    "EducationField": "Área de Formação",
+    "EmployeeCount": "Contagem de Funcionários",
+    "EnvironmentSatisfaction": "Satisfação com o Ambiente",
+    "Gender": "Gênero",
+    "HourlyRate": "Valor da Hora (R$)",
+    "JobInvolvement": "Nível de Envolvimento",
+    "JobLevel": "Nível do Cargo",
+    "JobRole": "Cargo",
+    "JobSatisfaction": "Satisfação com o Trabalho",
+    "MaritalStatus": "Estado Civil",
+    "MonthlyIncome": "Renda Mensal (R$)",
+    "MonthlyIncome_log": "Log da Renda Mensal",
+    "MonthlyRate": "Valor Mensal (R$)",
+    "NumCompaniesWorked": "Nº de Empresas Anteriores",
+    "Over18": "Maior de 18 Anos?",
+    "OverTime": "Faz Horas Extras?",
+    "PercentSalaryHike": "Aumento Salarial (%)",
+    "PerformanceRating": "Nota de Performance",
+    "RelationshipSatisfaction": "Satisfação nos Relacionamentos",
+    "StandardHours": "Horas Padrão de Trabalho",
+    "StockOptionLevel": "Nível de Opção de Ações",
+    "TotalWorkingYears": "Anos Totais de Carreira",
+    "TotalWorkingYears_log": "Log dos Anos de Carreira",
+    "TrainingTimesLastYear": "Treinamentos no Último Ano",
+    "WorkLifeBalance": "Equilíbrio Vida-Trabalho",
+    "YearsAtCompany": "Anos na Empresa",
+    "YearsInCurrentRole": "Anos no Cargo Atual",
+    "YearsPerCompany": "Média de Anos por Empresa",
+    "YearsSinceLastPromotion": "Anos Desde a Última Promoção",
+    "YearsWithCurrManager": "Anos com o Gestor Atual",
+}
+
+# --- MUDANÇA PRINCIPAL: DICIONÁRIO DE AJUDA COMPLETO ---
+# Dicionário de textos de ajuda (tooltips) para a interface
+HELP_TEXTS = {
+    "Age": "A idade do funcionário em anos.",
+    "BusinessTravel": "A frequência com que o funcionário viaja a trabalho.",
+    "DailyRate": "O valor diário base do salário do funcionário.",
+    "Department": "O departamento em que o funcionário trabalha.",
+    "DistanceFromHome": "A distância em quilômetros entre a casa e o trabalho.",
+    "Education": "Nível de educação (1=Básico, 5=Doutorado).",
+    "EducationField": "A área de formação acadêmica.",
+    "EmployeeCount": "Valor fixo, geralmente 1. Usado para consistência do modelo.",
+    "EnvironmentSatisfaction": "Nível de satisfação do funcionário com o ambiente de trabalho.",
+    "Gender": "O gênero do funcionário.",
+    "HourlyRate": "O valor da hora de trabalho.",
+    "JobInvolvement": "Nível de envolvimento com as tarefas.",
+    "JobLevel": "O nível hierárquico do cargo (1=Júnior, 5=Diretor).",
+    "JobRole": "O cargo específico do funcionário.",
+    "JobSatisfaction": "Nível de satisfação com o cargo.",
+    "MaritalStatus": "O estado civil do funcionário.",
+    "MonthlyIncome": "O salário mensal bruto.",
+    "MonthlyIncome_log": "O logaritmo da renda mensal. Feature técnica usada pelo modelo para normalização.",
+    "MonthlyRate": "Taxa mensal interna da empresa, pode estar relacionada a custos.",
+    "NumCompaniesWorked": "O número de empresas onde o funcionário já trabalhou.",
+    "Over18": "Indica se o funcionário tem mais de 18 anos.",
+    "OverTime": "Indica se o funcionário está fazendo horas extras.",
+    "PercentSalaryHike": "A porcentagem do último aumento salarial.",
+    "PerformanceRating": "A última nota de avaliação de performance.",
+    "RelationshipSatisfaction": "Nível de satisfação com os relacionamentos no trabalho.",
+    "StandardHours": "O número padrão de horas de trabalho. Geralmente 80.",
+    "StockOptionLevel": "O nível de elegibilidade a ações da empresa.",
+    "TotalWorkingYears": "O número total de anos de carreira do funcionário.",
+    "TotalWorkingYears_log": "O logaritmo dos anos totais de carreira. Usado para normalização.",
+    "TrainingTimesLastYear": "O número de treinamentos que o funcionário fez no último ano.",
+    "WorkLifeBalance": "Percepção sobre o equilíbrio entre vida pessoal e trabalho.",
+    "YearsAtCompany": "Há quantos anos o funcionário está na empresa.",
+    "YearsInCurrentRole": "Há quantos anos no cargo atual.",
+    "YearsPerCompany": "Uma média de quantos anos o funcionário fica em cada empresa.",
+    "YearsSinceLastPromotion": "Anos desde a última promoção.",
+    "YearsWithCurrManager": "Anos com o mesmo gestor.",
+}
+
+
+# --- DICIONÁRIO PARA TRADUZIR AS OPÇÕES ---
+VALUE_MAPPING = {
+    "BusinessTravel": {
+        "Non-Travel": "Não Viaja",
+        "Travel_Rarely": "Viaja Raramente",
+        "Travel_Frequently": "Viaja Frequentemente",
+    },
+    "Department": {
+        "Sales": "Vendas",
+        "Research & Development": "Pesquisa & Desenvolvimento",
+        "Human Resources": "Recursos Humanos",
+    },
+    "EducationField": {
+        "Life Sciences": "Ciências da Vida",
+        "Medical": "Medicina",
+        "Marketing": "Marketing",
+        "Technical Degree": "Formação Técnica",
+        "Other": "Outro",
+        "Human Resources": "Recursos Humanos",
+    },
+    "Gender": {
+        "Female": "Feminino",
+        "Male": "Masculino",
+    },
+    "JobRole": {
+        "Sales Executive": "Executivo de Vendas",
+        "Research Scientist": "Pesquisador Cientista",
+        "Laboratory Technician": "Técnico de Laboratório",
+        "Manufacturing Director": "Diretor de Manufatura",
+        "Healthcare Representative": "Representante de Saúde",
+        "Manager": "Gerente",
+        "Sales Representative": "Representante de Vendas",
+        "Research Director": "Diretor de Pesquisa",
+        "Human Resources": "Recursos Humanos",
+    },
+    "MaritalStatus": {
+        "Single": "Solteiro(a)",
+        "Married": "Casado(a)",
+        "Divorced": "Divorciado(a)",
+    },
+    "OverTime": {
+        "Yes": "Sim",
+        "No": "Não",
+    },
+    "Over18": {
+        "Y": "Sim",
+    },
+}
