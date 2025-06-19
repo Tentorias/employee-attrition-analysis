@@ -1,14 +1,14 @@
-## 🧠 Análise e Predição de Attrition de Funcionários
+# 🧠 Análise e Predição de Attrition de Funcionários
 Análise e predição da rotatividade de funcionários (employee attrition) com machine learning. Este projeto implementa um pipeline completo de ponta a ponta, desde a análise exploratória até um modelo de produção otimizado e interpretável, culminando em uma aplicação interativa com Streamlit para apoiar o RH na retenção de talentos.
 
-## 🎯 Objetivos
+# 🎯 Objetivos
 - Identificar funcionários com alto risco de desligamento através de um modelo preditivo.
 
 - Compreender os principais fatores que influenciam a rotatividade com técnicas de explicabilidade (XAI).
 
 - Fornecer uma ferramenta interativa (app Streamlit) para simulações "what-if" e análises de casos individuais.
 
-## 🧰 Stack Tecnológica
+# 🧰 Stack Tecnológica
 - Core & Modelagem:
 
 - Python 3.10+
@@ -43,7 +43,7 @@ Análise e predição da rotatividade de funcionários (employee attrition) com 
 
 - GitHub Actions (Integração Contínua - CI)
 
-## 📁 Estrutura do Projeto:
+# 📁 Estrutura do Projeto:
 ```
 employee-attrition-analysis/
 │
@@ -79,25 +79,25 @@ employee-attrition-analysis/
 └── requirements.txt        # Dependências do projeto
 ```
 
-## 🚀 Guia de Uso
+# 🚀 Guia de Uso
 Pré-requisitos
 - Python 3.10+
 
 - Git e Git LFS instalados (git lfs install)
 
 ## Instalação
-# 1. Clone o repositório
+### 1. Clone o repositório
 git clone https://github.com/Tentorias/employee-attrition-analysis.git
 cd employee-attrition-analysis
 
-# 2. Crie e ative um ambiente virtual
+### 2. Crie e ative um ambiente virtual
 python -m venv .venv
-# Windows
+### Windows
 .venv\Scripts\activate
-# Linux/macOS
+### Linux/macOS
 source .venv/bin/activate
 
-# 3. Instale as dependências
+### 3. Instale as dependências
 pip install -r requirements.txt
 
 Como Usar o Pipeline via CLI
@@ -110,19 +110,19 @@ python src/attrition/main.py run-pipeline
 
 2. Executar Passos Individualmente
 
-# Etapa de limpeza dos dados
+### Etapa de limpeza dos dados
 python src/attrition/main.py process --raw-path data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv --out-path data/processed/employee_attrition_processed.csv
 
-# Etapa de engenharia de features
+### Etapa de engenharia de features
 python src/attrition/main.py engineer --input-path data/processed/employee_attrition_processed.csv --output-path artifacts/features/features_matrix.csv --features-out-path artifacts/features/features.pkl
 
-# Etapa de Otimização de Hiperparâmetros (lenta, fazer ocasionalmente)
+### Etapa de Otimização de Hiperparâmetros (lenta, fazer ocasionalmente)
 python src/attrition/main.py tune --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl
 
-# Etapa de Treino (gera o modelo de avaliação em /artifacts)
+### Etapa de Treino (gera o modelo de avaliação em /artifacts)
 python src/attrition/main.py train --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path artifacts/models/model.pkl --thr-path artifacts/models/threshold_optimizado.pkl
 
-# Etapa de Retreino Final (gera o modelo de produção em /models)
+### Etapa de Retreino Final (gera o modelo de produção em /models)
 python src/attrition/main.py train --retrain-full-data --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path models/production_model.pkl
 
 Como Rodar a Aplicação Web (Streamlit)
@@ -132,7 +132,7 @@ streamlit run app/main_app.py
 
 Um painel interativo será aberto no seu navegador.
 
-## 📊 Pipeline de ML
+# 📊 Pipeline de ML
 1. Processamento: Limpeza de dados, transformações logarítmicas.
 
 2. Engenharia de Features: Criação de variáveis derivadas (YearsPerCompany) e codificação One-Hot.
@@ -145,7 +145,7 @@ Um painel interativo será aberto no seu navegador.
 
 6. Avaliação & Explicabilidade: Análise de precision, recall e F1-score, além da preparação para uso de SHAP para interpretabilidade.
 
-## 📈 Resultados do Modelo Final
+# 📈 Resultados do Modelo Final
 Este projeto culminou em um modelo XGBoost otimizado para robustez e generalização.
 
 - Algoritmo: XGBoost Classifier
@@ -156,7 +156,7 @@ Este projeto culminou em um modelo XGBoost otimizado para robustez e generaliza�
 
 Este F1-Score é o resultado de uma estratégia focada em reduzir o overfitting, trocando um pico de performance potencialmente instável (~0.61) por um modelo mais confiável e generalista, ideal para uma aplicação de negócio. O modelo apresenta um excelente recall (~0.79), sendo muito eficaz em identificar a maioria dos funcionários com risco de saída.
 
-## 📦 Dataset
+# 📦 Dataset
 Fonte: IBM HR Analytics Employee Attrition Dataset (Kaggle)
 
 - 1.470 registros
