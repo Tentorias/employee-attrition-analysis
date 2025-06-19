@@ -91,14 +91,21 @@ git clone https://github.com/Tentorias/employee-attrition-analysis.git
 cd employee-attrition-analysis
 
 ### 2. Crie e ative um ambiente virtual
+```
 python -m venv .venv
+```
 ### Windows
+```
 .venv\Scripts\activate
+```
 ### Linux/macOS
+```
 source .venv/bin/activate
-
+```
 ### 3. Instale as dependências
+```
 pip install -r requirements.txt
+```
 
 Como Usar o Pipeline via CLI
 O projeto é orquestrado pelo src/attrition/main.py, que aceita vários comandos.
@@ -111,25 +118,35 @@ python src/attrition/main.py run-pipeline
 2. Executar Passos Individualmente
 
 ### Etapa de limpeza dos dados
+```
 python src/attrition/main.py process --raw-path data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv --out-path data/processed/employee_attrition_processed.csv
+```
 
 ### Etapa de engenharia de features
+```
 python src/attrition/main.py engineer --input-path data/processed/employee_attrition_processed.csv --output-path artifacts/features/features_matrix.csv --features-out-path artifacts/features/features.pkl
+```
 
 ### Etapa de Otimização de Hiperparâmetros (lenta, fazer ocasionalmente)
+```
 python src/attrition/main.py tune --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl
+```
 
 ### Etapa de Treino (gera o modelo de avaliação em /artifacts)
+```
 python src/attrition/main.py train --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path artifacts/models/model.pkl --thr-path artifacts/models/threshold_optimizado.pkl
+```
 
 ### Etapa de Retreino Final (gera o modelo de produção em /models)
+```
 python src/attrition/main.py train --retrain-full-data --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path models/production_model.pkl
+```
 
 Como Rodar a Aplicação Web (Streamlit)
 Após gerar o modelo de produção com o comando de retreino final, execute:
-
+```
 streamlit run app/main_app.py
-
+```
 Um painel interativo será aberto no seu navegador.
 
 # 📊 Pipeline de ML
