@@ -1,12 +1,10 @@
-# src/attrition/main.py (CORRIGIDO E COMPLETO)
+# src/attrition/main.py (VERSÃO FINAL E CORRIGIDA)
 
 import argparse
 
 from attrition.data import process
 from attrition.features import engineer
 from attrition.models import evaluate, explain, predict, train, tunning
-
-# import os <-- Removido, pois não era utilizado
 
 
 def main():
@@ -16,7 +14,7 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="Subcomandos disponíveis")
 
-    # --- Todos os parsers de argumentos ---
+    # --- Parsers de Argumentos ---
     process_parser = subparsers.add_parser("process", help="Processar dados brutos")
     process_parser.add_argument(
         "--raw-path", type=str, required=True, help="Caminho para o CSV bruto"
@@ -28,6 +26,7 @@ def main():
         help="Caminho para salvar o CSV processado",
     )
 
+    # --- AJUSTE 2: MELHORIA NO PARSER DO ENGINEER ---
     engineer_parser = subparsers.add_parser(
         "engineer", help="Realizar engenharia de features"
     )
@@ -40,7 +39,16 @@ def main():
         required=True,
         help="Caminho para salvar o CSV com features",
     )
+    # Adiciona o argumento para o arquivo de features .pkl
+    engineer_parser.add_argument(
+        "--features-out-path",
+        type=str,
+        required=True,
+        help="Caminho para salvar a lista de features .pkl",
+    )
 
+    # (O resto dos parsers - train, tune, evaluate, etc. - continua igual)
+    # ...
     train_parser = subparsers.add_parser("train", help="Treinar o modelo")
     train_parser.add_argument(
         "--data-path",
@@ -190,8 +198,13 @@ def main():
     # --- Lógica de Execução dos Comandos ---
     if args.command == "process":
         process.main(raw_path=args.raw_path, out_path=args.out_path)
+    # --- AJUSTE 3: ATUALIZA A CHAMADA DO ENGINEER ---
     elif args.command == "engineer":
-        engineer.main(input_path=args.input_path, output_path=args.output_path)
+        engineer.main(
+            input_path=args.input_path,
+            output_path=args.output_path,
+            features_out_path=args.features_out_path,
+        )
     elif args.command == "train":
         train.main(
             in_path=args.data_path,
@@ -205,6 +218,7 @@ def main():
             random_state=args.random_state,
             retrain_full_data=args.retrain_full_data,
         )
+    # ... (O resto da lógica dos comandos - tune, evaluate, etc. - continua igual)
     elif args.command == "tune":
         tunning.run_tuning(
             data_path=args.data_path,
