@@ -160,7 +160,7 @@ if st.sidebar.button("Fazer Predição", type="primary"):
                 f"**{probability:.0%}** de chance de deixar a empresa. A decisão "
                 f"final ('Sai' ou 'Fica') é baseada em um threshold otimizado "
                 f"de **{threshold:.2f}**.",
-                icon="�",
+                icon="ℹ️",
             )
 else:
     st.info(
