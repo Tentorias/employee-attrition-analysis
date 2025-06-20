@@ -63,12 +63,6 @@ def main(raw_path: str, out_path: str):
     logging.info("🔧 Aplicando transformações de log")
     df = transform_logs(df, ["MonthlyIncome", "TotalWorkingYears"])
 
-    # Se quiser incluir cap_outliers, drop_and_map e encode_categoricals:
-    # df["MonthlyIncome"] = cap_outliers(df["MonthlyIncome"])
-    # df["TotalWorkingYears"] = cap_outliers(df["TotalWorkingYears"])
-    # df = drop_and_map(df)
-    # df = encode_categoricals(df, ["Department", "EducationField", ...])
-
     logging.info(f"💾 Salvando dados processados em {out_path}")
     save_processed(df, out_path)
     logging.info("✅ Concluído.")

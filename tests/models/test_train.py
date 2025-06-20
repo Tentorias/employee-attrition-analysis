@@ -9,8 +9,6 @@ from sklearn.tree import DecisionTreeClassifier
 from attrition.models.train import (main, optimize_threshold, parse_args,
                                     train_model)
 
-# 1. Basic unit tests
-
 
 def test_train_model_returns_classifier():
     X = pd.DataFrame({"a": [0, 1, 0, 1], "b": [1, 0, 1, 0]})

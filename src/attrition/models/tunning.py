@@ -24,18 +24,15 @@ def run_tuning(
     """
     print("--- Iniciando Otimização de Hiperparâmetros com Optuna ---")
 
-    # Carregar e preparar os dados
     df = pd.read_csv(data_path)
     features = joblib.load(features_path)
     X = df[features]
     y = df[target_col]
 
-    # Dividir em treino e teste (essencial para o Optuna avaliar no conjunto de teste)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    # Aplicar SMOTE apenas nos dados de treino
     smote = SMOTE(random_state=42)
     X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
@@ -61,7 +58,6 @@ def run_tuning(
 
         return f1_score(y_test, y_pred)
 
-    # Criar e executar o estudo do Optuna
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=n_trials)
 

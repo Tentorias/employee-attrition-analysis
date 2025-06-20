@@ -77,6 +77,5 @@ def test_main_no_command_shows_help():
 
 def test_main_invalid_command():
     result = run_cli(["invalidcmd"])
-    # argparse deve mostrar erro de comando inválido
     assert result.returncode != 0
     assert "invalid choice" in result.stderr or "usage" in result.stderr

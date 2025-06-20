@@ -1,4 +1,4 @@
-# src/attrition/features/engineer.py (VERSÃO FINAL E CORRIGIDA)
+# src/attrition/features/engineer.py
 
 import argparse
 import logging
@@ -21,22 +21,17 @@ def load_processed(path: str) -> pd.DataFrame:
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """Cria features derivadas e aplica one-hot encoding."""
-    # 1. Cria a variável derivada
     df["YearsPerCompany"] = df["TotalWorkingYears"] / df["NumCompaniesWorked"].replace(
         0, 1
     )
 
     # --- MUDANÇA PRINCIPAL AQUI ---
-    # 2. Deixamos o get_dummies cuidar da coluna 'Attrition' também
-    # Ele vai criar a coluna 'Attrition_Yes' automaticamente
     cat_cols = df.select_dtypes(include=["object"]).columns.tolist()
 
-    # Adicionamos 'Attrition' à lista se ainda não estiver (ela pode ser object ou category)
     if "Attrition" not in cat_cols:
         cat_cols.append("Attrition")
 
     logger.info(f"🔧 Codificando colunas categóricas: {cat_cols}")
-    # Usamos dtype=float para garantir que as novas colunas sejam numéricas
     df_encoded = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=float)
 
     return df_encoded
@@ -46,8 +41,6 @@ def save_features(df: pd.DataFrame, matrix_path: str, features_list_path: str):
     """Salva o DataFrame com features e a lista de colunas."""
     os.makedirs(os.path.dirname(matrix_path), exist_ok=True)
     df.to_csv(matrix_path, index=False)
-
-    # Salva a lista de colunas de FEATURES (sem a coluna alvo)
     features_to_save = df.drop(
         columns=["Attrition_Yes"], errors="ignore"
     ).columns.tolist()

@@ -2,8 +2,6 @@
 
 # --- DICIONÁRIOS DE MAPEAMENTO ---
 
-# Dicionário para nomes amigáveis
-# Dicionário que mapeia nomes técnicos de colunas para nomes amigáveis (tradução)
 LABEL_MAPPING = {
     "Age": "Idade",
     "BusinessTravel": "Frequência de Viagem",
@@ -43,8 +41,7 @@ LABEL_MAPPING = {
     "YearsWithCurrManager": "Anos com o Gestor Atual",
 }
 
-# --- MUDANÇA PRINCIPAL: DICIONÁRIO DE AJUDA COMPLETO ---
-# Dicionário de textos de ajuda (tooltips) para a interface
+# --- DICIONÁRIO DE AJUDA ---
 HELP_TEXTS = {
     "Age": "A idade do funcionário em anos.",
     "BusinessTravel": "A frequência com que o funcionário viaja a trabalho.",
@@ -83,7 +80,6 @@ HELP_TEXTS = {
     "YearsSinceLastPromotion": "Anos desde a última promoção.",
     "YearsWithCurrManager": "Anos com o mesmo gestor.",
 }
-
 
 # --- DICIONÁRIO PARA TRADUZIR AS OPÇÕES ---
 VALUE_MAPPING = {
