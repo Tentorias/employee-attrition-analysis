@@ -1,5 +1,4 @@
-# src/attrition/models/evaluate.py (VERSÃO CORRETA)
-
+# src/attrition/models/evaluate.py
 import argparse
 import logging
 

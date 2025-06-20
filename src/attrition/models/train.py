@@ -1,11 +1,11 @@
-# src/attrition/models/train.py (VERSÃO FINAL DE PRODUÇÃO)
+# src/attrition/models/train.py
 
 import argparse
 import os
 
 import joblib
 import pandas as pd
-from imblearn.combine import SMOTEENN  # <-- MUDANÇA 1: Importa o SMOTEENN
+from imblearn.combine import SMOTEENN
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
@@ -18,14 +18,12 @@ def train_model(X, y, random_state: int = 42) -> XGBClassifier:
     """
     print("Balanceando e limpando dados de treino com SMOTEENN...")
     try:
-        # <-- MUDANÇA 2: Usa o SMOTEENN em vez do SMOTE
         balancer = SMOTEENN(random_state=random_state)
         X_res, y_res = balancer.fit_resample(X, y)
     except Exception as e:
         print(f"Não foi possível aplicar SMOTEENN. Usando dados originais. Erro: {e}")
         X_res, y_res = X, y
 
-    # <-- MUDANÇA 3: Usa os parâmetros focados em reduzir o overfitting
     best_params = {
         "n_estimators": 690,
         "max_depth": 4,
@@ -122,7 +120,6 @@ def main(
         print(f"✅ F1-Score (Teste com threshold {best_thr:.2f}) = {best_f1:.4f}")
 
 
-# As funções parse_args e cli_main permanecem as mesmas
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
         description="Treina XGBClassifier e otimiza threshold."

@@ -1,4 +1,4 @@
-# src/attrition/models/predict.py (VERSÃO FINAL E INTELIGENTE)
+# src/attrition/models/predict.py
 
 import argparse
 import json
@@ -14,7 +14,6 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
     carrega o modelo e retorna a predição.
     """
     try:
-        # Carregar os artefatos
         model = joblib.load(model_path)
         threshold = joblib.load(threshold_path)
         feature_names = joblib.load(features_path)
@@ -22,7 +21,6 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
         # --- INTELIGÊNCIA DE PRÉ-PROCESSAMENTO CENTRALIZADA AQUI ---
         X_new = pd.DataFrame([input_data])
 
-        # 1. Cria features derivadas que o modelo espera
         if (
             "TotalWorkingYears" in X_new.columns
             and "NumCompaniesWorked" in X_new.columns
@@ -38,13 +36,10 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
         if "TotalWorkingYears" in X_new.columns:
             X_new["TotalWorkingYears_log"] = np.log1p(X_new["TotalWorkingYears"])
 
-        # 2. Aplica o one-hot encoding
         X_new_encoded = pd.get_dummies(X_new, drop_first=True, dtype=float)
 
-        # 3. Alinha as colunas com o que o modelo foi treinado
         X_new_aligned = X_new_encoded.reindex(columns=feature_names, fill_value=0)
 
-        # 4. Faz a predição
         probability = model.predict_proba(X_new_aligned)[:, 1][0]
         prediction = int((probability >= threshold).astype(int))
 
@@ -70,7 +65,6 @@ def cli_main():
     )
     args = parser.parse_args()
 
-    # Lê os dados brutos do arquivo para simular a entrada
     with open(args.input_file, "r") as f:
         input_data = json.load(f)
 
@@ -78,7 +72,7 @@ def cli_main():
         model_path=args.model_path,
         threshold_path=args.threshold_path,
         features_path=args.features_path,
-        input_data=input_data,  # Passa o dicionário para a função principal
+        input_data=input_data,
     )
     if prediction is not None:
         print("\n--- Resultado da Predição ---")

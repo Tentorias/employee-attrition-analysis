@@ -8,14 +8,12 @@ import pandas as pd
 import streamlit as st
 
 # Adiciona a pasta raiz ao path do Python para encontrar os módulos locais.
-# É necessário que esta linha venha antes das importações de 'src' e 'ui_config'.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Importa os dicionários de configuração e a função de predição
-from ui_config import HELP_TEXTS, LABEL_MAPPING, VALUE_MAPPING  # noqa: E402
+from ui_config import HELP_TEXTS, LABEL_MAPPING, VALUE_MAPPING
 
-from src.attrition.models.predict import \
-    main as predict_attrition  # noqa: E402
+from src.attrition.models.predict import main as predict_attrition
 
 # --- Configuração da Página ---
 st.set_page_config(
