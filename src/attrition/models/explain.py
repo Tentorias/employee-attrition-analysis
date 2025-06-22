@@ -8,8 +8,8 @@ import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 import shap
+import sys
 
-# Configuração do logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -22,18 +22,14 @@ def explain_model(model, X_test: pd.DataFrame, output_path: str):
     """
     logger.info("📊 Gerando explicações do modelo com SHAP...")
 
-    # 1. Cria o explainer de forma agnóstica ao modelo
-    # shap.Explainer seleciona o algoritmo ideal (Tree, Kernel, etc.)
     explainer = shap.Explainer(model, X_test)
 
-    # 2. Calcula os valores SHAP para o conjunto de teste
     shap_values = explainer(X_test)
 
-    # 3. Gera e salva o gráfico de resumo (beeswarm)
     logger.info(f"💾 Salvando gráfico de importância das features em {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    plt.figure()  # shap.summary_plot cria sua própria figura, mas é bom ter o controle
+    plt.figure() 
     shap.summary_plot(shap_values, X_test, show=False)
     plt.title("Importância das Features (SHAP Summary Plot)", size=16)
     plt.savefig(output_path, bbox_inches="tight")
@@ -84,10 +80,11 @@ def main():
 
     except FileNotFoundError as e:
         logger.error(
-            f"Erro: Arquivo não encontrado. Verifique os caminhos. Detalhes: {e}"
-        )
+            f"Erro: Arquivo não encontrado. Verifique os caminhos. Detalhes: {e}")
+        sys.exit(1)
     except Exception as e:
         logger.error(f"Ocorreu um erro inesperado: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
