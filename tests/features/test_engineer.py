@@ -15,6 +15,7 @@ def test_engineer_features_all_types():
             "NumCompaniesWorked": [1, 2, 0],
             "Department": ["HR", "IT", "Sales"],
             "JobRole": ["Manager", "Staff", "Staff"],
+            "Attrition": [1, 0, 1],  # Coluna adicionada
         }
     )
     df_feat = engineer_features(df)
@@ -24,27 +25,37 @@ def test_engineer_features_all_types():
 
 
 def test_engineer_features_no_object():
-    df = pd.DataFrame({"TotalWorkingYears": [1, 2], "NumCompaniesWorked": [1, 2]})
+    df = pd.DataFrame(
+        {
+            "TotalWorkingYears": [1, 2],
+            "NumCompaniesWorked": [1, 2],
+            "Attrition": [0, 1],  # Coluna adicionada
+        }
+    )
     df_feat = engineer_features(df)
-    assert "YearsPerCompany" in df_feat.columns
+    assert "YearsPerCompany" in df_feat.columns 
 
 
 def test_load_and_save_features(tmp_path):
     df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
     out_file = tmp_path / "features.csv"
-    save_features(df, str(out_file))
+    features_list_file = tmp_path / "features.pkl" 
+    save_features(df, str(out_file), str(features_list_file)) 
     df2 = load_processed(str(out_file))
     pd.testing.assert_frame_equal(df, df2)
+    assert features_list_file.exists() 
 
 
 def test_engineer_cli(tmp_path):
     in_file = tmp_path / "in.csv"
     out_file = tmp_path / "out.csv"
+    features_out_file = tmp_path / "features.pkl"
     df = pd.DataFrame(
         {
             "TotalWorkingYears": [1, 2],
             "NumCompaniesWorked": [1, 2],
             "Department": ["HR", "IT"],
+            "Attrition": [0, 1], # Coluna adicionada
         }
     )
     df.to_csv(in_file, index=False)
@@ -54,14 +65,17 @@ def test_engineer_cli(tmp_path):
         [
             sys.executable,
             "src/attrition/features/engineer.py",
-            "--in-path",
+            "--input-path",
             str(in_file),
-            "--out-path",
+            "--output-path",
             str(out_file),
+            "--features-out-path", # Argumento adicionado
+            str(features_out_file),
         ],
         capture_output=True,
         text=True,
         env=env,
     )
+    assert result.returncode == 0, f"O script falhou com o erro: {result.stderr}"
     assert out_file.exists()
-    assert result.returncode == 0
+    assert features_out_file.exists()
