@@ -37,12 +37,13 @@ def train_model(X, y, random_state: int = 42) -> XGBClassifier:
     print("Treinando modelo XGBoost com parâmetros finais e regularizados...")
 
     model = XGBClassifier(
+        objective="binary:logistic", 
+        base_score=0.5,               
         use_label_encoder=False,
         eval_metric="logloss",
         random_state=random_state,
         **best_params,
     )
-
     model.fit(X_res, y_res)
     return model
 
@@ -116,8 +117,8 @@ def main(
         if y_test_out:
             y_test.to_csv(y_test_out, index=False)
 
-        print("\n--- Pipeline de Treinamento Concluído ---")
-        print(f"✅ F1-Score (Teste com threshold {best_thr:.2f}) = {best_f1:.4f}")
+        print(f"\n--- Pipeline de Treinamento Concluído ---")
+        print(f"F1-Score (Teste com threshold {best_thr:.2f}) = {best_f1:.4f}")
 
 
 def parse_args(args=None):
@@ -148,14 +149,13 @@ def parse_args(args=None):
     )
     return parser.parse_args(args)
 
-
 def cli_main():
     args = parse_args()
     main(
-        in_path=args.data_path,
+        in_path=args.in_path,  # Corrigido de data_path
         features_path=args.features_path,
         model_path=args.model_path,
-        threshold_path=args.thr_path,
+        threshold_path=args.threshold_path, # Corrigido de thr_path
         target_col=args.target_col,
         test_size=args.test_size,
         random_state=args.random_state,
@@ -163,7 +163,6 @@ def cli_main():
         y_test_out=args.y_test_out,
         retrain_full_data=args.retrain_full_data,
     )
-
 
 if __name__ == "__main__":
     cli_main()

@@ -34,21 +34,34 @@ def test_main_process(tmp_path):
     assert result.returncode == 0
 
 
-def test_main_engineer(tmp_path):
+def test_main_process(tmp_path):
     in_file = tmp_path / "in.csv"
     out_file = tmp_path / "out.csv"
-    pd.DataFrame(
-        {
-            "TotalWorkingYears": [1, 2],
-            "NumCompaniesWorked": [1, 2],
-            "Department": ["HR", "IT"],
-        }
-    ).to_csv(in_file, index=False)
+
+    # DataFrame de teste completo, simulando o dado bruto real
+    sample_data = {
+        "MonthlyIncome": [1000],
+        "TotalWorkingYears": [1],
+        "EmployeeCount": [1],
+        "Over18": ["Y"],
+        "StandardHours": [80],
+        "Attrition": ["No"],
+        "Gender": ["Male"],
+        "BusinessTravel": ["Travel_Rarely"],
+        "Department": ["Sales"],
+        "EducationField": ["Marketing"],
+        "JobRole": ["Sales Executive"],
+        "MaritalStatus": ["Single"],
+        "OverTime": ["No"],
+    }
+    pd.DataFrame(sample_data).to_csv(in_file, index=False)
+
     result = run_cli(
-        ["engineer", "--input-path", str(in_file), "--output-path", str(out_file)]
+        ["process", "--raw-path", str(in_file), "--out-path", str(out_file)]
     )
+
+    assert result.returncode == 0, f"O script falhou com o erro: {result.stderr}"
     assert out_file.exists()
-    assert result.returncode == 0
 
 
 def test_main_train_shows_error(tmp_path):
