@@ -9,7 +9,8 @@ Análise e predição da rotatividade de funcionários (employee attrition) com 
 - Fornecer uma ferramenta interativa (app Streamlit) para simulações "what-if" e análises de casos individuais.
 
 # 🧰 Stack Tecnológica
-- Core & Modelagem:
+
+## Core & Modelagem:
 
 - Python 3.10+
 
@@ -23,7 +24,7 @@ Análise e predição da rotatividade de funcionários (employee attrition) com 
 
 - Optuna (Otimização de Hiperparâmetros)
 
-- Visualização & Aplicação:
+## Visualização & Aplicação:
 
 - Matplotlib, Seaborn
 
@@ -33,7 +34,9 @@ Análise e predição da rotatividade de funcionários (employee attrition) com 
 
 - Jupyter Notebook (Análise Exploratória)
 
-- Desenvolvimento & MLOps:
+##  Desenvolvimento & MLOps:
+
+- Poetry (Gerenciamento de Dependências e Ambientes)
 
 - Git & Git LFS (Versionamento de código e modelos)
 
@@ -76,13 +79,15 @@ employee-attrition-analysis/
 ├── .gitignore
 ├── .gitattributes          # Configuração do Git LFS
 ├── pre-commit-config.yaml  # Configuração dos hooks de pre-commit
-└── requirements.txt        # Dependências do projeto
+├── pyproject.toml          # Arquivo de configuração do projeto 
+└── poetry.lock             # Garante instalações determinísticas
 ```
 
 # 🚀 Guia de Uso
-Pré-requisitos
-- Python 3.10+
 
+## Pré-requisitos
+- Python 3.10+
+- Poetry instalado (consulte a documentação oficial para instalar)
 - Git e Git LFS instalados (git lfs install)
 
 ## Instalação
@@ -90,62 +95,40 @@ Pré-requisitos
 git clone https://github.com/Tentorias/employee-attrition-analysis.git
 cd employee-attrition-analysis
 
-### 2. Crie e ative um ambiente virtual
+### 2. Instale as dependências com Poetry
 ```
-python -m venv .venv
-```
-### Windows
-```
-.venv\Scripts\activate
-```
-### Linux/macOS
-```
-source .venv/bin/activate
-```
-### 3. Instale as dependências
-```
-pip install -r requirements.txt
+poetry install
 ```
 
-Como Usar o Pipeline via CLI
+### Como Usar o Pipeline via CLI
 O projeto é orquestrado pelo src/attrition/main.py, que aceita vários comandos.
 
 1. Executar o Pipeline Completo (Recomendado)
 Este comando executa as etapas de processamento, engenharia, treino e avaliação em sequência.
-
-python src/attrition/main.py run-pipeline
-
+```
+poetry run python src/attrition/main.py run-pipeline
+```
 2. Executar Passos Individualmente
 
 ### Etapa de limpeza dos dados
 ```
-python src/attrition/main.py process --raw-path data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv --out-path data/processed/employee_attrition_processed.csv
+poetry run python src/attrition/main.py process --raw-path data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv --out-path data/processed/employee_attrition_processed.csv
 ```
 
 ### Etapa de engenharia de features
 ```
-python src/attrition/main.py engineer --input-path data/processed/employee_attrition_processed.csv --output-path artifacts/features/features_matrix.csv --features-out-path artifacts/features/features.pkl
-```
-
-### Etapa de Otimização de Hiperparâmetros (lenta, fazer ocasionalmente)
-```
-python src/attrition/main.py tune --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl
-```
-
-### Etapa de Treino (gera o modelo de avaliação em /artifacts)
-```
-python src/attrition/main.py train --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path artifacts/models/model.pkl --thr-path artifacts/models/threshold_optimizado.pkl
+poetry run python src/attrition/main.py engineer --input-path data/processed/employee_attrition_processed.csv --output-path artifacts/features/features_matrix.csv --features-out-path artifacts/features/features.pkl
 ```
 
 ### Etapa de Retreino Final (gera o modelo de produção em /models)
 ```
-python src/attrition/main.py train --retrain-full-data --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path models/production_model.pkl
+poetry run python src/attrition/main.py train --retrain-full-data --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path models/production_model.pkl
 ```
 
-Como Rodar a Aplicação Web (Streamlit)
+### Como Rodar a Aplicação Web (Streamlit)
 Após gerar o modelo de produção com o comando de retreino final, execute:
 ```
-streamlit run app/main_app.py
+poetry run streamlit run app/main_app.py
 ```
 Um painel interativo será aberto no seu navegador.
 
