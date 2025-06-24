@@ -1,14 +1,14 @@
-# src/attrition/models/explain.py (versão com sugestões)
+# src/attrition/models/explain.py
 
 import argparse
 import logging
 import os
+import sys
 
 import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 import shap
-import sys
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -22,15 +22,14 @@ def explain_model(model, X_test: pd.DataFrame, output_path: str):
     """
     logger.info("📊 Gerando explicações do modelo com SHAP...")
 
-    explainer = shap.Explainer(model, X_test)
+    explainer = shap.Explainer(model)
 
     shap_values = explainer(X_test)
 
     logger.info(f"💾 Salvando gráfico de importância das features em {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    plt.figure() 
-    shap.summary_plot(shap_values, X_test, show=False)
+    shap.summary_plot(shap_values, X_test, show=False, plot_size="auto")
     plt.title("Importância das Features (SHAP Summary Plot)", size=16)
     plt.savefig(output_path, bbox_inches="tight")
     plt.close()

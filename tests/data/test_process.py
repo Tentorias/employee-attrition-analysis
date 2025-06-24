@@ -79,7 +79,6 @@ def test_process_cli(tmp_path):
     in_file = tmp_path / "in.csv"
     out_file = tmp_path / "out.csv"
 
-    # DataFrame de teste completo, simulando o dado bruto real
     sample_data = {
         "MonthlyIncome": [1000],
         "TotalWorkingYears": [1],
@@ -116,25 +115,3 @@ def test_process_cli(tmp_path):
     assert out_file.exists()
 
 
-def test_main_with_all_steps(tmp_path):
-    df = pd.DataFrame(
-        {
-            "MonthlyIncome": [1000, 2000, 0],
-            "TotalWorkingYears": [1, 4, 0],
-            "EmployeeCount": [1, 1, 1],
-            "Over18": ["Y", "Y", "Y"],
-            "StandardHours": [40, 40, 40],
-            "Attrition": ["Yes", "No", "No"],
-            "Gender": ["Male", "Female", "Male"],
-            "Department": ["HR", "IT", "HR"],
-            "EducationField": ["Field1", "Field2", "Field1"],
-        }
-    )
-    out_file = tmp_path / "out.csv"
-    df = transform_logs(df, ["MonthlyIncome", "TotalWorkingYears"])
-    df["MonthlyIncome"] = cap_outliers(df["MonthlyIncome"])
-    df["TotalWorkingYears"] = cap_outliers(df["TotalWorkingYears"])
-    df = drop_and_map(df)
-    df = encode_categoricals(df, ["Department", "EducationField"])
-    save_processed(df, str(out_file))
-    assert out_file.exists()

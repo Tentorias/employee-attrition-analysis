@@ -1,6 +1,7 @@
 # src/attrition/models/evaluate.py
 import argparse
 import logging
+import sys 
 
 import joblib
 import pandas as pd
@@ -16,15 +17,18 @@ def evaluate_model(model, X_test, y_test, threshold: float):
     logger.info(f"Aplicando threshold de {threshold:.2f} para fazer as previsões.")
     probabilities = model.predict_proba(X_test)[:, 1]
     predictions = (probabilities >= threshold).astype(int)
-    f1 = f1_score(y_test, predictions)
+    
+    f1 = f1_score(y_test, predictions, pos_label=1)
     report = classification_report(y_test, predictions)
     cm = confusion_matrix(y_test, predictions)
+
     logger.info("--- Relatório de Avaliação no Conjunto de Teste ---")
     logger.info("\n" + report)
     logger.info("--- Matriz de Confusão ---")
     logger.info("\n" + str(cm))
     logger.info("--------------------------------------------------")
     logger.info(f"✅ F1-Score Final (Teste): {f1:.4f}")
+    
     return f1, report, cm
 
 
@@ -33,20 +37,27 @@ def main(model_path: str, threshold_path: str, x_test_path: str, y_test_path: st
         logger.info("Iniciando a avaliação do modelo...")
         logger.info(f"Carregando modelo de: {model_path}")
         model = joblib.load(model_path)
+        
         logger.info(f"Carregando threshold de: {threshold_path}")
         threshold = joblib.load(threshold_path)
+        
         logger.info(f"Carregando dados de teste X de: {x_test_path}")
         X_test = pd.read_csv(x_test_path)
+        
         logger.info(f"Carregando dados de teste y de: {y_test_path}")
         y_test = pd.read_csv(y_test_path).squeeze("columns")
+        
         evaluate_model(model=model, X_test=X_test, y_test=y_test, threshold=threshold)
+        
         logger.info("Avaliação concluída com sucesso.")
+        
     except FileNotFoundError as e:
-        logger.error(
-            f"Erro: Arquivo não encontrado. Verifique os caminhos. Detalhes: {e}"
-        )
+        logger.error(f"Erro: Arquivo não encontrado. Verifique os caminhos. Detalhes: {e}")
+        sys.exit(1)
+        
     except Exception as e:
         logger.error(f"Ocorreu um erro inesperado durante a avaliação: {e}")
+        sys.exit(1) 
 
 
 if __name__ == "__main__":
