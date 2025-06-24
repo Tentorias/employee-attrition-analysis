@@ -25,14 +25,14 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         0, 1
     )
 
-    # --- MUDANÇA PRINCIPAL AQUI ---
     cat_cols = df.select_dtypes(include=["object"]).columns.tolist()
 
-    if "Attrition" not in cat_cols:
-        cat_cols.append("Attrition")
-
-    logger.info(f"🔧 Codificando colunas categóricas: {cat_cols}")
-    df_encoded = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=float)
+    if cat_cols:
+        logger.info(f"🔧 Codificando colunas categóricas: {cat_cols}")
+        df_encoded = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=float)
+    else:
+        logger.info("ℹ️ Nenhuma coluna categórica para codificar.")
+        df_encoded = df.copy() # Se não houver colunas, apenas retorna uma cópia
 
     return df_encoded
 
@@ -41,9 +41,15 @@ def save_features(df: pd.DataFrame, matrix_path: str, features_list_path: str):
     """Salva o DataFrame com features e a lista de colunas."""
     os.makedirs(os.path.dirname(matrix_path), exist_ok=True)
     df.to_csv(matrix_path, index=False)
+    
+    target_col_name = "Attrition" 
+    if target_col_name not in df.columns:
+        target_col_name = "Attrition_Yes"
+
     features_to_save = df.drop(
-        columns=["Attrition_Yes"], errors="ignore"
+        columns=[target_col_name], errors="ignore"
     ).columns.tolist()
+    
     joblib.dump(features_to_save, features_list_path)
     logger.info(f"💾 Lista de features salva em {features_list_path}")
 

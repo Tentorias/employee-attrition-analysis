@@ -18,7 +18,6 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
         threshold = joblib.load(threshold_path)
         feature_names = joblib.load(features_path)
 
-        # --- INTELIGÊNCIA DE PRÉ-PROCESSAMENTO CENTRALIZADA AQUI ---
         X_new = pd.DataFrame([input_data])
 
         if (

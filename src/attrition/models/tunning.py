@@ -1,5 +1,7 @@
 # src/attrition/models/tunning.py
 
+import argparse
+import logging
 import warnings
 
 import joblib
@@ -10,19 +12,23 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 
+# Configuração do logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
 
 
 def run_tuning(
     data_path: str,
     features_path: str,
-    target_col: str = "Attrition_Yes",
+    # --- CORREÇÃO 1: Alinhar o nome da coluna alvo ---
+    target_col: str = "Attrition", # Alterado de "Attrition_Yes"
     n_trials: int = 50,
 ):
     """
     Executa a otimização de hiperparâmetros com Optuna para o modelo XGBoost.
     """
-    print("--- Iniciando Otimização de Hiperparâmetros com Optuna ---")
+    logger.info("--- Iniciando Otimização de Hiperparâmetros com Optuna ---")
 
     df = pd.read_csv(data_path)
     features = joblib.load(features_path)
@@ -49,8 +55,14 @@ def run_tuning(
             "reg_lambda": trial.suggest_float("reg_lambda", 0, 5),
         }
 
+        # --- CORREÇÃO 2: Adicionar parâmetros essenciais ao XGBClassifier ---
         model = XGBClassifier(
-            use_label_encoder=False, eval_metric="logloss", random_state=42, **params
+            objective="binary:logistic",
+            base_score=0.5,
+            use_label_encoder=False,
+            eval_metric="logloss",
+            random_state=42,
+            **params
         )
 
         model.fit(X_train_resampled, y_train_resampled)
@@ -59,12 +71,31 @@ def run_tuning(
         return f1_score(y_test, y_pred)
 
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=n_trials)
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
 
-    print("\n--- Otimização Concluída ---")
-    print(f"Melhor F1-score encontrado: {study.best_value:.4f}")
-    print("Melhores parâmetros encontrados:")
-    print(study.best_params)
-    print("\nCOPIE o dicionário de parâmetros acima e cole no seu script 'train.py'.")
+    logger.info("\n--- Otimização Concluída ---")
+    logger.info(f"Melhor F1-score encontrado: {study.best_value:.4f}")
+    logger.info("Melhores parâmetros encontrados:")
+    logger.info(study.best_params)
+    logger.info("\nCOPIE o dicionário de parâmetros acima e cole no seu script 'train.py'.")
 
     return study.best_params
+
+# --- MELHORIA: Adicionar interface de linha de comando ---
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Roda a otimização de hiperparâmetros com Optuna."
+    )
+    parser.add_argument("--data-path", required=True, help="Caminho para o features_matrix.csv")
+    parser.add_argument("--features-path", required=True, help="Caminho para o features.pkl")
+    parser.add_argument("--target-col", default="Attrition", help="Nome da coluna alvo")
+    parser.add_argument("--n-trials", type=int, default=50, help="Número de tentativas do Optuna")
+    
+    args = parser.parse_args()
+
+    run_tuning(
+        data_path=args.data_path,
+        features_path=args.features_path,
+        target_col=args.target_col,
+        n_trials=args.n_trials,
+    )
