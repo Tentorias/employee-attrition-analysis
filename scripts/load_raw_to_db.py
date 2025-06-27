@@ -8,7 +8,6 @@ RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "WA_Fn-UseC_-HR-Employee-Attrition.c
 DB_PATH = BASE_DIR / "database" / "hr_analytics.db"
 TABLE_NAME = "employees"
 
-
 def load_csv_to_sqlite():
     """
     Lê os dados do CSV de origem e os carrega em uma tabela SQLite,
