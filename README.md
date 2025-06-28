@@ -1,166 +1,176 @@
-# 🧠 Análise e Predição de Attrition de Funcionários
-Análise e predição da rotatividade de funcionários (employee attrition) com machine learning. Este projeto implementa um pipeline completo de ponta a ponta, desde a análise exploratória até um modelo de produção otimizado e interpretável, culminando em uma aplicação interativa com Streamlit para apoiar o RH na retenção de talentos.
+# 🧠 Solução de BI e ML para Análise e Predição de Attrition
 
-# 🎯 Objetivos
+Análise e predição da rotatividade de funcionários (employee attrition). Este projeto evoluiu de um pipeline de Machine Learning para uma solução completa de Business Intelligence e ML, implementando desde a análise exploratória e um modelo de produção otimizado até um ecossistema com ferramentas estratégicas (Power BI) e táticas (Streamlit) para apoiar o RH na retenção de talentos.
+
+---
+
+## 🏛️ Arquitetura da Solução
+
+A solução final é dividida em duas camadas complementares que se alimentam de uma fonte de dados central, cada uma com um público e propósito distintos.
+
+### Fonte Única da Verdade
+
+- **SQLite Database (**``**)**: Centraliza todos os dados brutos, processados e, mais importante, os resultados das predições do modelo.
+
+### As Duas Camadas de Análise
+
+#### 📈 Camada Estratégica (Visão para a Liderança)
+
+- **Propósito**: Diagnosticar a saúde da organização e monitorar KPIs de alto nível. Responde "O quê?" e "Onde?".
+- **Ferramentas**: SQL + Power BI
+- **Público**: Diretoria, C-Level, Head de RH
+- **Exemplo de Pergunta**: "Qual departamento tem a maior taxa de turnover e qual o impacto financeiro disso para a empresa?"
+
+#### 🚀 Camada Tática e Preditiva (Apoio à Decisão)
+
+- **Propósito**: Analisar casos individuais, simular cenários e agir proativamente. Responde "E se?".
+- **Ferramentas**: ML (Python) + Streamlit
+- **Público**: Gestores, Analistas de RH
+- **Exemplo de Pergunta**: "Qual a probabilidade do funcionário João sair e como podemos diminuir esse risco?"
+
+---
+
+## 🎯 Objetivos
+
 - Identificar funcionários com alto risco de desligamento através de um modelo preditivo.
+- Compreender os principais fatores que influenciam a rotatividade com técnicas de XAI.
+- Fornecer uma ferramenta interativa (Streamlit) para simulações "what-if".
+- Prover um dashboard executivo (Power BI) para o monitoramento dos KPIs.
 
-- Compreender os principais fatores que influenciam a rotatividade com técnicas de explicabilidade (XAI).
+---
 
-- Fornecer uma ferramenta interativa (app Streamlit) para simulações "what-if" e análises de casos individuais.
+## 🛠️ Stack Tecnológica
 
-# 🧰 Stack Tecnológica
+### Dados & BI
 
-## Core & Modelagem:
+- SQLite
+- Power BI
+- SQL
+
+### Core & Modelagem
 
 - Python 3.10+
-
 - Pandas, NumPy
-
 - Scikit-learn
-
 - XGBoost
-
 - Imbalanced-learn (SMOTEENN)
+- Optuna
 
-- Optuna (Otimização de Hiperparâmetros)
-
-## Visualização & Aplicação:
+### Visualização & Aplicação
 
 - Matplotlib, Seaborn
+- SHAP
+- Streamlit
+- Jupyter Notebook
 
-- SHAP (Explicabilidade do Modelo)
+### Desenvolvimento & MLOps
 
-- Streamlit (Dashboard Interativo)
+- Poetry
+- Git & Git LFS
+- Pytest
+- Pre-commit, Black, isort, Flake8
+- GitHub Actions
 
-- Jupyter Notebook (Análise Exploratória)
+---
 
-##  Desenvolvimento & MLOps:
+## 📁 Estrutura do Projeto
 
-- Poetry (Gerenciamento de Dependências e Ambientes)
-
-- Git & Git LFS (Versionamento de código e modelos)
-
-- Pytest (Testes automatizados)
-
-- Pre-commit, Black, isort, Flake8 (Qualidade e formatação de código)
-
-- GitHub Actions (Integração Contínua - CI)
-
-# 📁 Estrutura do Projeto:
 ```
 employee-attrition-analysis/
-│
-├── app/
-│   ├── main_app.py         # Script principal do app Streamlit
-│   └── ui_config.py        # Dicionários de configuração da interface
-│
-├── artifacts/              # Saídas do pipeline (modelos, features, etc.)
-│   ├── features/
-│   └── models/
-│
-├── data/
-│   ├── raw/                # Dados brutos originais
-│   └── processed/          # Dados limpos após a primeira etapa
-│
-├── models/                 # Modelo final, pronto para produção
-│   └── production_model.pkl
-│
-├── notebooks/              # Análise exploratória e prototipagem
-│
-├── src/
-│   └── attrition/
-│       ├── data/           # Scripts de processamento de dados
-│       ├── features/       # Scripts de engenharia de features
-│       └── models/         # Scripts de treino, avaliação, predição, etc.
-│       └── main.py         # Orquestrador da linha de comando (CLI)
-│
-├── tests/                  # Testes automatizados
-│
+├── app/                  # Código da aplicação Streamlit
+├── artifacts/            # Saídas do pipeline (modelos, features, etc.)
+├── data/                 # Dados brutos e processados
+├── database/             # Banco de dados centralizado (hr_analytics.db)
+├── models/               # Modelo final
+├── notebooks/            # Análise exploratória
+├── reports/              # Dashboard Power BI (.pbix)
+├── scripts/              # Scripts de automação
+├── sql/                  # Queries SQL para BI
+├── src/                  # Código-fonte do pipeline de ML
+├── tests/                # Testes automatizados
 ├── .gitignore
-├── .gitattributes          # Configuração do Git LFS
-├── pre-commit-config.yaml  # Configuração dos hooks de pre-commit
-├── pyproject.toml          # Arquivo de configuração do projeto 
-└── poetry.lock             # Garante instalações determinísticas
+├── .gitattributes
+├── pre-commit-config.yaml
+├── pyproject.toml
+└── poetry.lock
 ```
 
-# 🚀 Guia de Uso
+---
 
-## Pré-requisitos
+## 🚀 Guia de Uso
+
+### ⚡️ Pré-requisitos
+
 - Python 3.10+
-- Poetry instalado (consulte a documentação oficial para instalar)
-- Git e Git LFS instalados (git lfs install)
+- Poetry instalado
+- Git e Git LFS
 
-## Instalação
-### 1. Clone o repositório
+### 🔧 Instalação
+
+```bash
 git clone https://github.com/Tentorias/employee-attrition-analysis.git
 cd employee-attrition-analysis
-
-### 2. Instale as dependências com Poetry
-```
 poetry install
 ```
 
-### Como Usar o Pipeline via CLI
-O projeto é orquestrado pelo src/attrition/main.py, que aceita vários comandos.
+### ⚙️ Fluxo de Execução
 
-1. Executar o Pipeline Completo (Recomendado)
-Este comando executa as etapas de processamento, engenharia, treino e avaliação em sequência.
-```
-poetry run python src/attrition/main.py run-pipeline
-```
-2. Executar Passos Individualmente
+**1. Criar a Base de Dados**
 
-### Etapa de limpeza dos dados
-```
-poetry run python src/attrition/main.py process --raw-path data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv --out-path data/processed/employee_attrition_processed.csv
+```bash
+poetry run python scripts/load_raw_to_db.py
 ```
 
-### Etapa de engenharia de features
-```
-poetry run python src/attrition/main.py engineer --input-path data/processed/employee_attrition_processed.csv --output-path artifacts/features/features_matrix.csv --features-out-path artifacts/features/features.pkl
+**2. Executar o Pipeline de ML** (Se necessário retreinar)
+
+```bash
+poetry run python src/attrition/main.py [comando]
 ```
 
-### Etapa de Retreino Final (gera o modelo de produção em /models)
-```
-poetry run python src/attrition/main.py train --retrain-full-data --data-path artifacts/features/features_matrix.csv --features-path artifacts/features/features.pkl --model-path models/production_model.pkl
+**3. Gerar Predições em Massa**
+
+```bash
+poetry run python scripts/generate_predictions.py
 ```
 
-### Como Rodar a Aplicação Web (Streamlit)
-Após gerar o modelo de produção com o comando de retreino final, execute:
-```
+**4. Visualizar as Análises**
+
+- **Power BI**: Abrir `reports/dashboard.pbix` e clicar em "Atualizar".
+- **Streamlit**:
+
+```bash
 poetry run streamlit run app/main_app.py
 ```
-Um painel interativo será aberto no seu navegador.
 
-# 📊 Pipeline de ML
-1. Processamento: Limpeza de dados, transformações logarítmicas.
+---
 
-2. Engenharia de Features: Criação de variáveis derivadas (YearsPerCompany) e codificação One-Hot.
+## 📊 Pipeline de ML
 
-3. Balanceamento de Dados: Utilização da técnica híbrida SMOTEENN para criar dados sintéticos da classe minoritária e limpar ruídos, combatendo o desbalanceamento e o overfitting.
+- **Processamento**: Limpeza de dados, transformações logarítmicas.
+- **Engenharia de Features**: Criação de variáveis derivadas e One-Hot.
+- **Balanceamento**: SMOTEENN
+- **Otimização**: Optuna
+- **Modelagem**: XGBoost
+- **Avaliação**: F1-score, Precision, Recall, SHAP
 
-4. Otimização: Busca de hiperparâmetros com Optuna para encontrar a configuração mais robusta do XGBoost.
+---
 
-5. Modelagem: Treinamento do modelo final XGBoost com os parâmetros otimizados.
+## 📊 Resultados do Modelo Final
 
-6. Avaliação & Explicabilidade: Análise de precision, recall e F1-score, além da preparação para uso de SHAP para interpretabilidade.
+- **Algoritmo**: XGBoost Classifier
+- **Técnica de balanceamento**: SMOTEENN
+- **F1-Score (Classe "Yes")**: \~0.53
 
-# 📈 Resultados do Modelo Final
-Este projeto culminou em um modelo XGBoost otimizado para robustez e generalização.
+Este F1-Score reflete uma estratégia que prioriza a capacidade de detectar verdadeiros positivos, mesmo com a classe "Yes" sendo minoritária (\~16%).
 
-- Algoritmo: XGBoost Classifier
+---
 
-- Técnica de balanceamento: SMOTEENN
+## 📦 Dataset
 
-- F1-Score (Classe "Yes" no teste): ~0.53
-
-Este F1-Score é o resultado de uma estratégia focada em reduzir o overfitting, trocando um pico de performance potencialmente instável (~0.61) por um modelo mais confiável e generalista, ideal para uma aplicação de negócio. O modelo apresenta um excelente recall (~0.79), sendo muito eficaz em identificar a maioria dos funcionários com risco de saída.
-
-# 📦 Dataset
-Fonte: IBM HR Analytics Employee Attrition Dataset (Kaggle)
-
+- Fonte: [IBM HR Analytics Employee Attrition Dataset (Kaggle)](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset)
 - 1.470 registros
+- 35 features
+- Target: `Attrition` (Yes/No)
 
-- 35 features (demográficas, de satisfação e de carreira)
+---
 
-- Target: Attrition (Yes/No) ~16% positivo
