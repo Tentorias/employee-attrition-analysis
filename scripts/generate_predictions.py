@@ -26,7 +26,7 @@ def generate_predictions():
         return
 
     try:
-        # --- 1. Carregar Dados e Modelo ---
+        # ---  Carrega Dados e Modelo ---
         print(f"Conectando ao banco de dados em '{DB_PATH}'...")
         with sqlite3.connect(DB_PATH) as conn:
             df = pd.read_sql_query(f"SELECT * FROM {EMPLOYEES_TABLE}", conn)
@@ -36,46 +36,35 @@ def generate_predictions():
         with open(MODEL_PATH, 'rb') as f:
             model = pickle.load(f)
         
-        # Pega a lista de features diretamente do modelo treinado.
-        # Esta é a fonte única da verdade para as colunas esperadas.
         model_feature_names = model.get_booster().feature_names
         print(f"✔ Modelo carregado. O modelo espera {len(model_feature_names)} features.")
 
-        # --- 2. Engenharia de Features Idêntica ao Treinamento ---
+        # --- Engenharia de Features Idêntica ao Treinamento ---
         print("Aplicando engenharia de features nos dados...")
         
         df_processed = df.copy()
 
-        # Criação de features de engenharia
-        # Adiciona 1 para evitar divisão por zero se NumCompaniesWorked for 0.
         df_processed['YearsPerCompany'] = (df_processed['YearsAtCompany'] / (df_processed['NumCompaniesWorked'] + 1)).round(2)
         
-        # Transformações logarítmicas
         df_processed['MonthlyIncome_log'] = np.log(df_processed['MonthlyIncome'] + 1)
         df_processed['TotalWorkingYears_log'] = np.log(df_processed['TotalWorkingYears'] + 1)
 
-        # Identifica colunas categóricas para One-Hot Encoding
         categorical_cols = df_processed.select_dtypes(include=['object', 'category']).columns.drop('Attrition', errors='ignore')
 
-        # Aplica o One-Hot Encoding
         df_encoded = pd.get_dummies(df_processed, columns=categorical_cols, drop_first=True)
         print("✔ Engenharia de features aplicada.")
         
-        # --- 3. Alinhamento Final com o Modelo ---
-        # Garante que o DataFrame final tenha exatamente as mesmas colunas (e na mesma ordem)
-        # que o modelo usou para ser treinado. Colunas que o modelo espera, mas não
-        # existem no df_encoded (raro), são preenchidas com 0. Colunas no df_encoded
-        # que o modelo não espera são descartadas.
+        # --- Alinhamento Final com o Modelo ---
         print("Alinhando colunas do DataFrame com as features do modelo...")
         X_final = df_encoded.reindex(columns=model_feature_names, fill_value=0)
         print(f"✔ DataFrame final preparado com {X_final.shape[1]} colunas.")
 
-        # --- 4. Gerar Predições de Probabilidade ---
+        # --- Gera Predições de Probabilidade ---
         print("Gerando predições de probabilidade de turnover...")
         probabilities = model.predict_proba(X_final)[:, 1]
         print("✔ Predições geradas.")
 
-        # --- 5. Preparar o DataFrame de Resultados ---
+        # --- Prepara o DataFrame de Resultados ---
         print("Montando tabela de resultados...")
         results_df = pd.DataFrame({
             'EmployeeNumber': df['EmployeeNumber'],
@@ -87,7 +76,7 @@ def generate_predictions():
         results_df['predicted_probability'] = results_df['predicted_probability'].round(4)
         print("✔ Tabela de resultados pronta.")
 
-        # --- 6. Salvar os Resultados no Banco de Dados ---
+        # --- Salva os Resultados no Banco de Dados ---
         print(f"Salvando predições na tabela '{PREDICTIONS_TABLE}'...")
         with sqlite3.connect(DB_PATH) as conn:
             results_df.to_sql(PREDICTIONS_TABLE, conn, if_exists='replace', index=False)
