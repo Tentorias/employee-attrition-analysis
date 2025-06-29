@@ -11,8 +11,6 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from ui_config import HELP_TEXTS, LABEL_MAPPING, VALUE_MAPPING
-# REMOVIDO: Não vamos mais usar a função de predição externa
-# from src.attrition.models.predict import main as predict_attrition
 
 # --- 1. Constantes e Configurações ---
 MODEL_PATH = project_root / "models" / "production_model.pkl"
@@ -81,7 +79,6 @@ def generate_form_widgets(container, features_to_display: list, df_reference: pd
         elif pd.api.types.is_numeric_dtype(df_reference[col]):
             min_val, max_val = int(df_reference[col].min()), int(df_reference[col].max())
             step = 100 if "Income" in col else 1
-            # Garante que o valor padrão esteja dentro do range do slider
             val = int(default_val)
             if val < min_val: val = min_val
             if val > max_val: val = max_val
@@ -109,20 +106,57 @@ else:
 
     with tab_analise_equipe:
         st.header("Visão Preditiva de Risco por Departamento")
-        st.markdown("Selecione um departamento para ver a lista de funcionários ordenada por risco de saída. Clique em 'Simular' para analisar um caso individual.")
+        st.markdown("Selecione um departamento, escolha um funcionário da lista e clique em 'Carregar para Simulação' para analisá-lo na outra aba.")
+        
         departments = sorted(df_full['Department'].unique())
-        selected_department = st.selectbox("Selecione um Departamento", departments, key="dept_selector")
+        selected_department = st.selectbox("Selecione um Departamento:", departments, key="dept_selector")
+
         if selected_department:
             team_df_sorted = df_full[df_full['Department'] == selected_department].sort_values(by="predicted_probability", ascending=False)
-            st.subheader(f"Funcionários em Risco em: {selected_department}")
-            for _, row in team_df_sorted.iterrows():
-                prob = row['predicted_probability']
-                color = "red" if prob > 0.6 else "orange" if prob > 0.3 else "green"
-                col_info, col_prob, col_action = st.columns([3, 1.5, 1.5])
-                col_info.markdown(f"**Cargo:** {row['JobRole']} (ID: {row['EmployeeNumber']})")
-                col_prob.metric("Risco de Saída", f"{prob:.1%}")
-                col_action.button("Simular", key=f"btn_{row['EmployeeNumber']}", on_click=update_employee_state, args=(row['EmployeeNumber'],))
-                st.divider()
+            
+            # --- INÍCIO DA MUDANÇA DE PERFORMANCE ---
+            # Em vez de um botão por funcionário, usamos um selectbox e um único botão.
+            
+            # Cria um dicionário para mapear o nome amigável ao ID do funcionário
+            employee_options = {
+                f"{row['JobRole']} (ID: {row['EmployeeNumber']})": row['EmployeeNumber'] 
+                for _, row in team_df_sorted.iterrows()
+            }
+            
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                selected_employee_display = st.selectbox(
+                    "Selecione um funcionário para analisar:",
+                    options=employee_options.keys()
+                )
+            
+            with col2:
+                st.write("") # Espaçamento
+                # Um único botão que usa o valor do selectbox
+                if st.button("Carregar para Simulação", type="primary", use_container_width=True):
+                    selected_employee_id = employee_options[selected_employee_display]
+                    update_employee_state(selected_employee_id)
+            
+            st.markdown("---")
+            st.subheader(f"Visão Geral da Equipe em {selected_department}")
+
+            # Exibe a lista completa em um st.dataframe, que é muito mais eficiente
+            st.dataframe(
+                team_df_sorted[['EmployeeNumber', 'JobRole', 'predicted_probability']],
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "EmployeeNumber": "ID do Funcionário",
+                    "JobRole": "Cargo",
+                    "predicted_probability": st.column_config.ProgressColumn(
+                        "Risco de Saída",
+                        format="%.1f%%",
+                        min_value=0,
+                        max_value=1,
+                    ),
+                }
+            )
+            # --- FIM DA MUDANÇA DE PERFORMANCE ---
 
     with tab_simulador:
         st.header("Simulador 'What-If' para Análise Individual")
@@ -143,26 +177,16 @@ else:
             with col2:
                 if st.button("Fazer Predição", type="primary", use_container_width=True):
                     with st.spinner("Avaliando o perfil do funcionário..."):
-                        # --- INÍCIO DA LÓGICA DE PREDIÇÃO INTEGRADA ---
-                        # 1. Cria um DataFrame com os dados atuais do formulário
                         sim_df = pd.DataFrame([input_data])
-                        
-                        # 2. Recria a engenharia de features, igual ao script de predição em massa
                         sim_df['YearsPerCompany'] = (sim_df['YearsAtCompany'] / (sim_df['NumCompaniesWorked'] + 1)).round(2)
                         sim_df['MonthlyIncome_log'] = np.log(sim_df['MonthlyIncome'] + 1)
                         sim_df['TotalWorkingYears_log'] = np.log(sim_df['TotalWorkingYears'] + 1)
-                        
                         categorical_cols = sim_df.select_dtypes(include=['object', 'category']).columns
                         df_encoded = pd.get_dummies(sim_df, columns=categorical_cols, drop_first=True)
-                        
-                        # 3. Alinha com as features do modelo
                         model_feature_names = model.get_booster().feature_names
                         X_final = df_encoded.reindex(columns=model_feature_names, fill_value=0)
-                        
-                        # 4. Faz a predição
                         probability = model.predict_proba(X_final)[:, 1][0]
                         prediction = 1 if probability >= threshold else 0
-                        # --- FIM DA LÓGICA DE PREDIÇÃO ---
 
                     if prediction is not None:
                         st.header("Resultado da Análise")
