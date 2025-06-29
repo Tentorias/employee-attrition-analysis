@@ -114,10 +114,7 @@ else:
         if selected_department:
             team_df_sorted = df_full[df_full['Department'] == selected_department].sort_values(by="predicted_probability", ascending=False)
             
-            # --- INÍCIO DA MUDANÇA DE PERFORMANCE ---
-            # Em vez de um botão por funcionário, usamos um selectbox e um único botão.
-            
-            # Cria um dicionário para mapear o nome amigável ao ID do funcionário
+            # --- Início da Mudança de Performance ---
             employee_options = {
                 f"{row['JobRole']} (ID: {row['EmployeeNumber']})": row['EmployeeNumber'] 
                 for _, row in team_df_sorted.iterrows()
@@ -132,31 +129,36 @@ else:
             
             with col2:
                 st.write("") # Espaçamento
-                # Um único botão que usa o valor do selectbox
                 if st.button("Carregar para Simulação", type="primary", use_container_width=True):
                     selected_employee_id = employee_options[selected_employee_display]
                     update_employee_state(selected_employee_id)
             
             st.markdown("---")
             st.subheader(f"Visão Geral da Equipe em {selected_department}")
+            
+            # --- INÍCIO DA CORREÇÃO DE FORMATAÇÃO ---
+            # O ProgressColumn funciona com valores entre 0 e 1 (ou 0 e 100 se especificado).
+            # Para exibir como porcentagem, o mais fácil é criar uma cópia para exibição.
+            df_display = team_df_sorted.copy()
+            # Multiplica a probabilidade por 100 para a barra de progresso.
+            df_display['predicted_probability_percent'] = df_display['predicted_probability'] * 100
 
-            # Exibe a lista completa em um st.dataframe, que é muito mais eficiente
             st.dataframe(
-                team_df_sorted[['EmployeeNumber', 'JobRole', 'predicted_probability']],
+                df_display[['EmployeeNumber', 'JobRole', 'predicted_probability_percent']],
                 use_container_width=True,
                 hide_index=True,
                 column_config={
                     "EmployeeNumber": "ID do Funcionário",
                     "JobRole": "Cargo",
-                    "predicted_probability": st.column_config.ProgressColumn(
+                    "predicted_probability_percent": st.column_config.ProgressColumn(
                         "Risco de Saída",
-                        format="%.1f%%",
+                        format="%.1f%%", # Formato de porcentagem com uma casa decimal
                         min_value=0,
-                        max_value=1,
+                        max_value=100, # O valor máximo agora é 100
                     ),
                 }
             )
-            # --- FIM DA MUDANÇA DE PERFORMANCE ---
+            # --- FIM DA CORREÇÃO DE FORMATAÇÃO ---
 
     with tab_simulador:
         st.header("Simulador 'What-If' para Análise Individual")
