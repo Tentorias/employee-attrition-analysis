@@ -160,6 +160,11 @@ poetry run streamlit run app/main_app.py
 | XGBoost (Produção)  | 0.54           | 0.66         | 0.60           | 0.87 |
 ```
 
+- Recall 66%: identifica 2/3 funcionários que sairão (foco no custo de erro).
+
+- AUC 0.87: excelente separação entre classes.
+
+- Supera baseline em +32 pontos no recall.
 
 - **Algoritmo**: XGBoost Classifier
 - **Técnica de balanceamento**: SMOTEENN
