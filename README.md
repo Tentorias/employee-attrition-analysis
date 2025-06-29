@@ -1,79 +1,74 @@
-# 🧠 Solução de BI e ML para Análise e Predição de Attrition
+# 🧠 Employee Attrition Analysis — BI & ML Solution
 
-Análise e predição da rotatividade de funcionários (employee attrition). Este projeto evoluiu de um pipeline de Machine Learning para uma solução completa de Business Intelligence e ML, implementando desde a análise exploratória e um modelo de produção otimizado até um ecossistema com ferramentas estratégicas (Power BI) e táticas (Streamlit) para apoiar o RH na retenção de talentos.
+Análise e predição da rotatividade de funcionários. Este projeto evolui de um pipeline puro de Machine Learning para uma **solução completa de Business Intelligence e ML**, com recursos de análise estratégica (Power BI) e tática (Streamlit) para apoiar decisões no setor de Recursos Humanos.
 
 ---
 
 ## 🏛️ Arquitetura da Solução
 
-A solução final é dividida em duas camadas complementares que se alimentam de uma fonte de dados central, cada uma com um público e propósito distintos.
+A solução é composta por duas camadas complementares, alimentadas por uma **fonte de dados central**.
 
-### Fonte Única da Verdade
+### 🔗 Fonte Única da Verdade
+- **SQLite Database**: `hr_analytics.db`  
+  Centraliza os dados brutos, processados e os resultados das predições.
 
-- **SQLite Database (**``**)**: Centraliza todos os dados brutos, processados e, mais importante, os resultados das predições do modelo.
-
-### As Duas Camadas de Análise
-
-#### 📈 Camada Estratégica (Visão para a Liderança)
-
-- **Propósito**: Diagnosticar a saúde da organização e monitorar KPIs de alto nível. Responde "O quê?" e "Onde?".
+### 📈 Camada Estratégica — Visão para a Liderança
+- **Propósito**: Diagnosticar a saúde da organização e monitorar KPIs.
 - **Ferramentas**: SQL + Power BI
-- **Público**: Diretoria, C-Level, Head de RH
-- **Exemplo de Pergunta**: "Qual departamento tem a maior taxa de turnover e qual o impacto financeiro disso para a empresa?"
+- **Público-Alvo**: Diretoria, C-Level, Head de RH
+- **Exemplo de Pergunta**:  
+  _"Qual departamento tem maior turnover e qual o impacto financeiro disso?"_
 
-#### 🚀 Camada Tática e Preditiva (Apoio à Decisão)
-
-- **Propósito**: Analisar casos individuais, simular cenários e agir proativamente. Responde "E se?".
-- **Ferramentas**: ML (Python) + Streamlit
-- **Público**: Gestores, Analistas de RH
-- **Exemplo de Pergunta**: "Qual a probabilidade do funcionário João sair e como podemos diminuir esse risco?"
+### 🚀 Camada Tática & Preditiva — Apoio à Decisão
+- **Propósito**: Analisar casos individuais e simular cenários.
+- **Ferramentas**: Python (ML) + Streamlit
+- **Público-Alvo**: Gestores, Analistas de RH
+- **Exemplo de Pergunta**:  
+  _"Qual a probabilidade do funcionário João sair? Como reduzir esse risco?"_
 
 ---
 
 ## 🎯 Objetivos
 
-- Identificar funcionários com alto risco de desligamento através de um modelo preditivo.
-- Compreender os principais fatores que influenciam a rotatividade com técnicas de XAI.
-- Fornecer uma ferramenta interativa (Streamlit) para simulações "what-if".
-- Prover um dashboard executivo (Power BI) para o monitoramento dos KPIs.
+- Identificar colaboradores com **alto risco de desligamento** via modelo preditivo.
+- Compreender **fatores que influenciam a rotatividade** com XAI (SHAP).
+- Fornecer um **app interativo (Streamlit)** para simulações "e se".
+- Disponibilizar **dashboards executivos (Power BI)** para liderança.
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-### Dados & BI
+### 📊 Dados & BI
+- SQLite  
+- SQL  
+- Power BI  
 
-- SQLite
-- Power BI
-- SQL
+### ⚙️ Core & Modelagem
+- Python 3.10+  
+- Pandas, NumPy  
+- Scikit-learn  
+- XGBoost  
+- Imbalanced-learn (SMOTEENN)  
+- Optuna  
 
-### Core & Modelagem
+### 🖼️ Visualização & Aplicação
+- Matplotlib, Seaborn  
+- SHAP  
+- Streamlit  
+- Jupyter Notebook  
 
-- Python 3.10+
-- Pandas, NumPy
-- Scikit-learn
-- XGBoost
-- Imbalanced-learn (SMOTEENN)
-- Optuna
-
-### Visualização & Aplicação
-
-- Matplotlib, Seaborn
-- SHAP
-- Streamlit
-- Jupyter Notebook
-
-### Desenvolvimento & MLOps
-
-- Poetry
-- Git & Git LFS
-- Pytest
-- Pre-commit, Black, isort, Flake8
-- GitHub Actions
+### ⚙️ Desenvolvimento & MLOps
+- Poetry  
+- Git & Git LFS  
+- Pytest  
+- Pre-commit, Black, isort, Flake8  
+- GitHub Actions  
 
 ---
 
 ## 📁 Estrutura do Projeto
+
 
 ```
 employee-attrition-analysis/
@@ -99,13 +94,12 @@ employee-attrition-analysis/
 
 ## 🚀 Guia de Uso
 
-### ⚡️ Pré-requisitos
-
+### Pré-requisitos
 - Python 3.10+
 - Poetry instalado
 - Git e Git LFS
 
-### 🔧 Instalação
+### Instalação
 
 ```bash
 git clone https://github.com/Tentorias/employee-attrition-analysis.git
@@ -115,25 +109,25 @@ poetry install
 
 ### ⚙️ Fluxo de Execução
 
-**1. Criar a Base de Dados**
+**1. Criar a Base de Dados:**
 
 ```bash
 poetry run python scripts/load_raw_to_db.py
 ```
 
-**2. Executar o Pipeline de ML** (Se necessário retreinar)
+**2. Executar o Pipeline de ML:** (treinar/retreinar):
 
 ```bash
 poetry run python src/attrition/main.py [comando]
 ```
 
-**3. Gerar Predições em Massa**
+**3. Gerar Predições em Massa:**
 
 ```bash
 poetry run python scripts/generate_predictions.py
 ```
 
-**4. Visualizar as Análises**
+**4. Visualizar as Análises:**
 
 - **Power BI**: Abrir `reports/dashboard.pbix` e clicar em "Atualizar".
 - **Streamlit**:
@@ -141,6 +135,8 @@ poetry run python scripts/generate_predictions.py
 ```bash
 poetry run streamlit run app/main_app.py
 ```
+
+**5. Validar performance do modelo (opcional):**
 
 ---
 
@@ -156,6 +152,14 @@ poetry run streamlit run app/main_app.py
 ---
 
 ## 📊 Resultados do Modelo Final
+
+```
+| Modelo              | Precisão (Yes) | Recall (Yes) | F1-Score (Yes) | AUC  |
+| ------------------- | -------------- | ------------ | -------------- | ---- |
+| Regressão Logística | 0.70           | 0.34         | 0.46           | -    |
+| XGBoost (Produção)  | 0.54           | 0.66         | 0.60           | 0.87 |
+```
+
 
 - **Algoritmo**: XGBoost Classifier
 - **Técnica de balanceamento**: SMOTEENN
