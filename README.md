@@ -1,39 +1,45 @@
 # 🧠 Employee Attrition Analysis — BI & ML Solution
 
-Análise e predição da rotatividade de funcionários. Este projeto evolui de um pipeline puro de Machine Learning para uma **solução completa de Business Intelligence e ML**, com recursos de análise estratégica (Power BI) e tática (Streamlit) para apoiar decisões no setor de Recursos Humanos.
+Análise e predição da rotatividade de funcionários. O projeto evolui de um pipeline puro de Machine Learning para uma solução completa de Business Intelligence + ML, com recursos estratégicos (Power BI) e táticos (Streamlit) para apoiar decisões no setor de RH.
 
 ---
 
 ## 🏛️ Arquitetura da Solução
 
-A solução é composta por duas camadas complementares, alimentadas por uma **fonte de dados central**.
+A solução possui duas camadas complementares, alimentadas por uma fonte de dados central:
 
 ### 🔗 Fonte Única da Verdade
-- **SQLite Database**: `hr_analytics.db`  
-  Centraliza os dados brutos, processados e os resultados das predições.
-
-### 📈 Camada Estratégica — Visão para a Liderança
-- **Propósito**: Diagnosticar a saúde da organização e monitorar KPIs.
-- **Ferramentas**: SQL + Power BI
-- **Público-Alvo**: Diretoria, C-Level, Head de RH
-- **Exemplo de Pergunta**:  
-  _"Qual departamento tem maior turnover e qual o impacto financeiro disso?"_
-
-### 🚀 Camada Tática & Preditiva — Apoio à Decisão
-- **Propósito**: Analisar casos individuais e simular cenários.
-- **Ferramentas**: Python (ML) + Streamlit
-- **Público-Alvo**: Gestores, Analistas de RH
-- **Exemplo de Pergunta**:  
-  _"Qual a probabilidade do funcionário João sair? Como reduzir esse risco?"_
+**SQLite Database**: `hr_analytics.db`  
+Centraliza dados brutos, processados e predições.
 
 ---
 
-## 🎯 Objetivos
+## 📈 Camada Estratégica — Visão para a Liderança
 
-- Identificar colaboradores com **alto risco de desligamento** via modelo preditivo.
-- Compreender **fatores que influenciam a rotatividade** com XAI (SHAP).
-- Fornecer um **app interativo (Streamlit)** para simulações "e se".
-- Disponibilizar **dashboards executivos (Power BI)** para liderança.
+- **Objetivo**: Diagnosticar saúde organizacional e monitorar KPIs  
+- **Ferramentas**: SQL + Power BI  
+- **Público-Alvo**: Diretoria, C-Level, Head de RH  
+- **Exemplo de Pergunta**:  
+  “Qual departamento tem maior turnover e qual o impacto financeiro disso?”
+
+---
+
+## 🚀 Camada Tática & Preditiva — Apoio à Decisão
+
+- **Objetivo**: Diagnosticar risco individual, causas e simular retenção  
+- **Ferramentas**: Python + Streamlit  
+- **Público-Alvo**: Gestores, Analistas de RH  
+- **Exemplo de Pergunta**:  
+  “Quais fatores influenciam a saída do João? Se eu der um aumento, qual o novo risco?”
+
+---
+
+## 🎯 Objetivos do Projeto
+
+- Identificar colaboradores com alto risco de saída via ML  
+- Diagnosticar causas com SHAP (XAI)  
+- Oferecer simulações "what-if" via Streamlit  
+- Criar dashboards estratégicos com Power BI  
 
 ---
 
@@ -49,7 +55,7 @@ A solução é composta por duas camadas complementares, alimentadas por uma **f
 - Pandas, NumPy  
 - Scikit-learn  
 - XGBoost  
-- Imbalanced-learn (SMOTEENN)  
+- SMOTEENN  
 - Optuna  
 
 ### 🖼️ Visualização & Aplicação
@@ -58,7 +64,7 @@ A solução é composta por duas camadas complementares, alimentadas por uma **f
 - Streamlit  
 - Jupyter Notebook  
 
-### ⚙️ Desenvolvimento & MLOps
+### ⚙️ Dev & MLOps
 - Poetry  
 - Git & Git LFS  
 - Pytest  
@@ -69,20 +75,19 @@ A solução é composta por duas camadas complementares, alimentadas por uma **f
 
 ## 📁 Estrutura do Projeto
 
-
 ```
 employee-attrition-analysis/
-├── app/                  # Código da aplicação Streamlit
-├── artifacts/            # Saídas do pipeline (modelos, features, etc.)
-├── data/                 # Dados brutos e processados
-├── database/             # Banco de dados centralizado (hr_analytics.db)
-├── models/               # Modelo final
-├── notebooks/            # Análise exploratória
-├── reports/              # Dashboard Power BI (.pbix)
-├── scripts/              # Scripts de automação
-├── sql/                  # Queries SQL para BI
-├── src/                  # Código-fonte do pipeline de ML
-├── tests/                # Testes automatizados
+├── app/                                # Streamlit app
+├── artifacts/                          # Modelos e artefatos
+├── data/                               # Dados brutos e tratados
+├── database/                           # hr_analytics.db
+├── models/                             # Modelo final
+├── notebooks/                          # EDA
+├── reports/                            # Power BI e gráficos
+├── scripts/                            # Scripts auxiliares
+├── sql/                                # Consultas SQL
+├── src/                                # Código do pipeline
+├── tests/                              # Testes automatizados
 ├── .gitignore
 ├── .gitattributes
 ├── pre-commit-config.yaml
@@ -94,12 +99,12 @@ employee-attrition-analysis/
 
 ## 🚀 Guia de Uso
 
-### Pré-requisitos
-- Python 3.10+
-- Poetry instalado
-- Git e Git LFS
+### 🔧 Pré-requisitos
+- Python 3.10+  
+- Poetry  
+- Git + Git LFS
 
-### Instalação
+### ⚙️ Instalação
 
 ```bash
 git clone https://github.com/Tentorias/employee-attrition-analysis.git
@@ -107,7 +112,7 @@ cd employee-attrition-analysis
 poetry install
 ```
 
-### ⚙️ Fluxo de Execução
+### ▶️ Execução
 
 **1. Criar a Base de Dados:**
 
@@ -121,13 +126,18 @@ poetry run python scripts/load_raw_to_db.py
 poetry run python src/attrition/main.py [comando]
 ```
 
-**3. Gerar Predições em Massa:**
+**3. Gerar explicador SHAP:**
+```bash
+poetry run python scripts/create_shap_explainer.py
+```
+
+**4. Gerar Predições em Massa:**
 
 ```bash
 poetry run python scripts/generate_predictions.py
 ```
 
-**4. Visualizar as Análises:**
+**5. Visualizar as Análises:**
 
 - **Power BI**: Abrir `reports/dashboard.pbix` e clicar em "Atualizar".
 - **Streamlit**:
@@ -136,7 +146,11 @@ poetry run python scripts/generate_predictions.py
 poetry run streamlit run app/main_app.py
 ```
 
-**5. Validar performance do modelo (opcional):**
+**6. Validar performance do modelo (opcional):**
+
+```bash
+poetry run python scripts/evaluate_model_deeply.py
+```
 
 ---
 
@@ -172,6 +186,16 @@ poetry run streamlit run app/main_app.py
 
 Este F1-Score reflete uma estratégia que prioriza a capacidade de detectar verdadeiros positivos, mesmo com a classe "Yes" sendo minoritária (\~16%).
 
+💼 Impacto no Negócio
+- **Power BI**: Identifica áreas críticas com maior risco
+
+- **Streamlit**: Permite análise e ranking por equipe
+
+- **SHAP**: Diagnóstico individual instantâneo
+
+- **Simulações**: Testa impacto de ações (ex: aumento salarial) no risco
+
+
 ---
 
 ## 📦 Dataset
@@ -182,4 +206,3 @@ Este F1-Score reflete uma estratégia que prioriza a capacidade de detectar verd
 - Target: `Attrition` (Yes/No)
 
 ---
-
