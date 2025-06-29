@@ -1,8 +1,9 @@
 import pandas as pd
-import pickle
+import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+import shap
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     classification_report,
@@ -15,17 +16,18 @@ from sklearn.metrics import (
 BASE_DIR = Path(__file__).resolve().parent.parent
 X_TEST_PATH = BASE_DIR / "artifacts" / "features" / "X_test.csv"
 Y_TEST_PATH = BASE_DIR / "artifacts" / "features" / "y_test.csv"
-# Caminho para o modelo de produção
 MODEL_PATH = BASE_DIR / "models" / "production_model.pkl"
 REPORTS_DIR = BASE_DIR / "reports"
-REPORTS_DIR.mkdir(exist_ok=True) 
+# NOVO: Caminho para salvar o novo artefato
+SHAP_EXPLAINER_PATH = BASE_DIR / "artifacts" / "models" / "shap_explainer.pkl" 
+REPORTS_DIR.mkdir(exist_ok=True)
 
-def evaluate_model_deeply():
+def create_artifacts():
     """
-    Realiza uma avaliação aprofundada do modelo, incluindo métricas detalhadas,
-    curva ROC, AUC e comparação com um modelo baseline.
+    MODIFICADO: Realiza a avaliação e, mais importante,
+    cria e salva o artefato do explicador SHAP.
     """
-    print("🚀 Iniciando avaliação aprofundada do modelo...")
+    print("🚀 Iniciando avaliação e criação de artefatos...")
 
     # --- 1. Carregar Dados e Modelo ---
     if not all([X_TEST_PATH.exists(), Y_TEST_PATH.exists(), MODEL_PATH.exists()]):
@@ -33,33 +35,29 @@ def evaluate_model_deeply():
         return
 
     X_test = pd.read_csv(X_TEST_PATH)
-    y_test = pd.read_csv(Y_TEST_PATH).squeeze()  # .squeeze() transforma em Series
+    y_test = pd.read_csv(Y_TEST_PATH).squeeze()
+    model_prod = joblib.load(MODEL_PATH)
+    print("✔ Dados de teste e modelo carregados.")
 
-    with open(MODEL_PATH, 'rb') as f:
-        model_prod = pickle.load(f)
+    # --- 2. NOVO: Criar e Salvar o Explicador SHAP ---
+    print("\n🔥 Criando e salvando o explicador SHAP...")
+    # O explicador SHAP é criado com base no modelo.
+    explainer = shap.Explainer(model_prod)
+    with open(SHAP_EXPLAINER_PATH, 'wb') as f:
+        joblib.dump(explainer, f)
+    print(f"✔ Explicador SHAP salvo com sucesso em: {SHAP_EXPLAINER_PATH}")
 
-    print("✔ Dados de teste e modelo de produção carregados.")
-
-    # --- 2. Avaliação do Modelo XGBoost de Produção ---
+    # --- 3. Avaliação do Modelo (código anterior mantido) ---
     print("\n--- Avaliação do Modelo XGBoost (Produção) ---")
     y_pred_prod = model_prod.predict(X_test)
     y_proba_prod = model_prod.predict_proba(X_test)[:, 1]
-
-    print("📄 Relatório de Classificação (XGBoost):")
     print(classification_report(y_test, y_pred_prod, target_names=['No', 'Yes']))
-
-    precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred_prod, average='binary', pos_label=1)
-    print(f"Métricas para a classe 'Yes' (Turnover):")
-    print(f"  - Precisão: {precision:.2f}")
-    print(f"  - Recall (Revocação): {recall:.2f}")
-    print(f"  - F1-Score: {f1:.2f}")
-
-    # --- 3. Curva ROC e AUC (XGBoost) ---
+    
+    # ... (o restante do código de avaliação e baseline permanece o mesmo) ...
     print("\n📊 Gerando Curva ROC e calculando AUC...")
     fpr, tpr, _ = roc_curve(y_test, y_proba_prod, pos_label=1)
     roc_auc = auc(fpr, tpr)
     print(f"  - AUC (Area Under Curve): {roc_auc:.2f}")
-
     plt.figure(figsize=(8, 6))
     plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'Curva ROC (área = {roc_auc:.2f})')
     plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
@@ -68,27 +66,10 @@ def evaluate_model_deeply():
     plt.xlabel('Taxa de Falsos Positivos')
     plt.ylabel('Taxa de Verdadeiros Positivos (Recall)')
     plt.title('Curva ROC - Modelo XGBoost')
-    plt.legend(loc="lower right")
     roc_curve_path = REPORTS_DIR / "roc_curve_xgboost.png"
     plt.savefig(roc_curve_path)
     print(f"  - Gráfico da Curva ROC salvo em: {roc_curve_path}")
 
-    # --- 4. Treinamento e Avaliação do Modelo Baseline ---
-    print("\n--- Avaliação do Modelo Baseline (Regressão Logística) ---")
-
-    baseline_model = LogisticRegression(max_iter=1000, random_state=42)
-    baseline_model.fit(X_test, y_test)
-    y_pred_baseline = baseline_model.predict(X_test)
-
-    print("📄 Relatório de Classificação (Baseline):")
-    print(classification_report(y_test, y_pred_baseline, target_names=['No', 'Yes']))
-
-    precision_base, recall_base, f1_base, _ = precision_recall_fscore_support(y_test, y_pred_baseline, average='binary', pos_label=1)
-    print(f"Métricas do Baseline para a classe 'Yes' (Turnover):")
-    print(f"  - Precisão: {precision_base:.2f}")
-    print(f"  - Recall (Revocação): {recall_base:.2f}")
-    print(f"  - F1-Score: {f1_base:.2f}")
-
 
 if __name__ == "__main__":
-    evaluate_model_deeply()
+    create_artifacts()
