@@ -25,7 +25,9 @@ MODEL_PATH = project_root / "models" / "production_model.pkl"
 THRESHOLD_PATH = project_root / "artifacts" / "models" / "threshold_optimizado.pkl"
 DB_PATH = project_root / "database" / "hr_analytics.db"
 SHAP_EXPLAINER_PATH = project_root / "artifacts" / "models" / "shap_explainer.pkl" 
-NON_EDITABLE_FIELDS = ["Age", "Gender", "MaritalStatus", "DistanceFromHome", "Department", "JobRole", "JobLevel"]
+
+# CORREÇÃO: Removido "JobLevel" da lista de campos não editáveis.
+NON_EDITABLE_FIELDS = ["Age", "Gender", "MaritalStatus", "DistanceFromHome", "Department", "JobRole"]
 
 REVERSED_VALUE_MAPPING = {
     feature: {v: k for k, v in options.items()}
@@ -57,13 +59,16 @@ def load_data_from_db():
 @st.cache_resource
 def load_model_artifacts():
     """Carrega todos os artefatos de ML necessários."""
+    if not all([MODEL_PATH.exists(), THRESHOLD_PATH.exists(), SHAP_EXPLAINER_PATH.exists()]):
+        st.error(f"Um ou mais artefatos de modelo não encontrados. Verifique os caminhos no código.")
+        return None, None, None
     try:
         model = joblib.load(MODEL_PATH)
         threshold = joblib.load(THRESHOLD_PATH)
         explainer = joblib.load(SHAP_EXPLAINER_PATH)
         return model, threshold, explainer
-    except FileNotFoundError as e:
-        st.error(f"Erro ao carregar artefatos de ML ({e}).")
+    except Exception as e:
+        st.error(f"Erro ao carregar os arquivos .pkl: {e}")
         return None, None, None
 
 def prepare_data_for_model(input_df: pd.DataFrame, model):
@@ -122,29 +127,23 @@ def generate_form_widgets(container, features_to_display: list, df_reference: pd
 df_full = load_data_from_db()
 model, threshold, explainer = load_model_artifacts()
 
-# Função de callback que agora também calcula a "dor" inicial
 def update_employee_state(employee_id):
     """Carrega os dados do funcionário e calcula sua análise de risco inicial."""
     employee_data = df_full[df_full['EmployeeNumber'] == employee_id].iloc[0].to_dict()
     
-    # Limpa resultados de simulações anteriores
     if 'simulation_result' in st.session_state:
         del st.session_state.simulation_result
 
-    # Calcula a "dor" inicial (fatores de risco)
     if model and explainer:
         employee_df = pd.DataFrame([employee_data])
         X_final = prepare_data_for_model(employee_df, model)
         shap_values = explainer.shap_values(X_final)
         top_contributors = get_top_shap_contributors(shap_values[0], X_final.columns)
-        # Salva tanto os dados do funcionário quanto a análise inicial
         st.session_state.initial_analysis = {"top_contributors": top_contributors}
     
     st.session_state.selected_employee = employee_data
     st.toast(f"Funcionário {employee_id} carregado para análise!", icon="👤")
-    st.rerun()
 
-# Inicialização segura do session_state
 if 'selected_employee' not in st.session_state:
     st.session_state.selected_employee = df_full.iloc[0].to_dict() if not df_full.empty else {}
 
@@ -169,35 +168,30 @@ else:
                 selected_employee_display = st.selectbox("Selecione um funcionário:", options=employee_options.keys())
             with col2:
                 st.write("")
-                if st.button("Analisar Funcionário", type="primary", use_container_width=True):
-                    if selected_employee_display:
-                        update_employee_state(employee_options[selected_employee_display])
+                if selected_employee_display:
+                    selected_employee_id = employee_options[selected_employee_display]
+                    st.button("Analisar Funcionário", type="primary", use_container_width=True, on_click=update_employee_state, args=(selected_employee_id,))
             
-            # --- INÍCIO DA CORREÇÃO ---
             df_display = team_df_sorted.copy()
-            # Cria uma nova coluna com o valor já multiplicado por 100
             df_display['risk_percent'] = df_display['predicted_probability'] * 100
             st.dataframe(
-                df_display[['EmployeeNumber', 'JobRole', 'risk_percent']], # Usa a nova coluna
+                df_display[['EmployeeNumber', 'JobRole', 'risk_percent']],
                 use_container_width=True, hide_index=True,
                 column_config={
                     "EmployeeNumber": "ID do Funcionário",
                     "JobRole": "Cargo",
                     "risk_percent": st.column_config.ProgressColumn(
-                        "Risco de Saída",
-                        format="%.1f%%", # O formato agora funciona corretamente
-                        min_value=0,
-                        max_value=100,  # O valor máximo agora é 100
+                        "Risco de Saída", format="%.1f%%", min_value=0, max_value=100
                     ),
                 }
             )
-            # --- FIM DA CORREÇÃO ---
 
     with tab_simulador:
         st.header("Simulador 'What-If' para Análise Individual")
         emp_data = st.session_state.selected_employee
         if emp_data:
-            st.info(f"Analisando o Funcionário: **{emp_data.get('EmployeeNumber', 'N/A')}** | Cargo: **{emp_data.get('JobRole', 'N/A')}** | Risco Atual: **{emp_data.get('predicted_probability', 0):.1%}**")
+            employee_id = emp_data.get('EmployeeNumber', 0)
+            st.info(f"Analisando o Funcionário: **{employee_id}** | Cargo: **{emp_data.get('JobRole', 'N/A')}** | Risco Atual: **{emp_data.get('predicted_probability', 0):.1%}**")
 
             if 'initial_analysis' in st.session_state:
                 st.subheader("Diagnóstico Inicial (A 'Dor')")
@@ -210,7 +204,6 @@ else:
             
             input_data = {}
             inner_tabs = st.tabs(list(FEATURE_GROUPS.keys()))
-            employee_id = emp_data.get('EmployeeNumber', 0)
             for i, group_name in enumerate(inner_tabs):
                 with group_name:
                     input_data.update(generate_form_widgets(st.container(), FEATURE_GROUPS[list(FEATURE_GROUPS.keys())[i]], df_full, emp_data, employee_id))
