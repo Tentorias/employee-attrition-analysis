@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import sqlite3
 import joblib
-import shap
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -26,7 +25,7 @@ THRESHOLD_PATH = project_root / "artifacts" / "models" / "threshold_optimizado.p
 DB_PATH = project_root / "database" / "hr_analytics.db"
 SHAP_EXPLAINER_PATH = project_root / "artifacts" / "models" / "shap_explainer.pkl" 
 
-# CORREÇÃO: Removido "JobLevel" da lista de campos não editáveis.
+
 NON_EDITABLE_FIELDS = ["Age", "Gender", "MaritalStatus", "DistanceFromHome", "Department", "JobRole"]
 
 REVERSED_VALUE_MAPPING = {
