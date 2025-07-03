@@ -26,3 +26,6 @@ database/hr_analytics.db # Evita incluir o banco de dados na imagem
 
 # Arquivos de ambiente local
 .env
+
+# .gitignore
+

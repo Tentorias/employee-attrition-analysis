@@ -26,9 +26,9 @@ Thumbs.db
 # Ignorar checkpoints do Jupyter
 **/.ipynb_checkpoints/
 
-# Ignorar todos os artefatos gerados pelo pipeline
-# Esta é a regra mais importante para resolver o problema de cota do LFS
-/artifacts/
+# Ignorar a pasta de artefatos, exceto o arquivo de features necessário para a API
+/artifacts/*
+!/artifacts/features/features.pkl
 
 # Ignorar dados processados e saídas
 /data/processed/
