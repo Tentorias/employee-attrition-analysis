@@ -26,9 +26,8 @@ Thumbs.db
 # Ignorar checkpoints do Jupyter
 **/.ipynb_checkpoints/
 
-# Ignorar a pasta de artefatos, exceto o arquivo de features necessário para a API
-# /artifacts/*
-# !/artifacts/features/features.pkl
+# Ignorar todos os arquivos de modelo e artefatos binários
+*.pkl
 
 # Ignorar dados processados e saídas
 /data/processed/
