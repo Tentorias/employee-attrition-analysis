@@ -27,7 +27,7 @@ Thumbs.db
 **/.ipynb_checkpoints/
 
 # Ignorar todos os arquivos de modelo e artefatos binários
-*.pkl
+# *.pkl
 
 # Ignorar dados processados e saídas
 /data/processed/

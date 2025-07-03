@@ -2,7 +2,7 @@
 
 import argparse
 import logging
-
+import os  # Importar a biblioteca os
 import joblib
 import numpy as np
 import pandas as pd
@@ -63,12 +63,23 @@ def main(in_path, features_path, model_path, threshold_path=None, target_col="At
     X = df[features]
     y = df[target_col]
 
+    # --- CORREÇÃO: Função auxiliar para garantir que o diretório de saída exista ---
+    def ensure_dir(file_path):
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+            logging.info(f"Diretório criado: {directory}")
+
     if retrain_full_data:
         logging.info("Retreinando o modelo com todos os dados disponíveis...")
         model = train_model(X, y, random_state)
+        
+        ensure_dir(model_path) # Garante que a pasta 'models/' exista
         joblib.dump(model, model_path)
         logging.info(f"Modelo final salvo em: {model_path}")
+        
         if threshold_path:
+            ensure_dir(threshold_path)
             joblib.dump(0.5, threshold_path) 
     else:
         logging.info("Dividindo os dados em conjuntos de treino e teste...")
@@ -78,16 +89,21 @@ def main(in_path, features_path, model_path, threshold_path=None, target_col="At
 
         model = train_model(X_train, y_train, random_state)
 
+        ensure_dir(model_path) # Garante que a pasta 'artifacts/models/' exista
         joblib.dump(model, model_path)
         logging.info(f"Modelo treinado salvo em: {model_path}")
 
         if threshold_path:
             optimal_thr = optimize_threshold(model, X_test, y_test)
+            ensure_dir(threshold_path)
             joblib.dump(optimal_thr, threshold_path)
             logging.info(f"Threshold otimizado salvo em: {threshold_path}")
 
         if x_test_out and y_test_out:
+            ensure_dir(x_test_out)
             X_test.to_csv(x_test_out, index=False)
+            
+            ensure_dir(y_test_out)
             y_test.to_csv(y_test_out, index=False)
             logging.info(f"Dados de teste salvos em: {x_test_out} e {y_test_out}")
 
