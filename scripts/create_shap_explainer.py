@@ -1,75 +1,71 @@
-import pandas as pd
+# scripts/create_shap_explainer.py
+
+import argparse
+import logging
+import os
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
-from pathlib import Path
+import pandas as pd
 import shap
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    classification_report,
-    roc_curve,
-    auc,
-    precision_recall_fscore_support
+
+# Configuração do logging para um feedback claro
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+logger = logging.getLogger(__name__)
 
-# --- Configuração de Caminhos ---
-BASE_DIR = Path(__file__).resolve().parent.parent
-X_TEST_PATH = BASE_DIR / "artifacts" / "features" / "X_test.csv"
-Y_TEST_PATH = BASE_DIR / "artifacts" / "features" / "y_test.csv"
-MODEL_PATH = BASE_DIR / "models" / "production_model.pkl"
-REPORTS_DIR = BASE_DIR / "reports"
-# NOVO: Caminho para salvar o novo artefato
-SHAP_EXPLAINER_PATH = BASE_DIR / "artifacts" / "models" / "shap_explainer.pkl" 
-REPORTS_DIR.mkdir(exist_ok=True)
-
-def create_artifacts():
+def create_and_save_explainer(model_path: str, output_path: str):
     """
-    MODIFICADO: Realiza a avaliação e, mais importante,
-    cria e salva o artefato do explicador SHAP.
+    Carrega um modelo treinado, cria um explicador SHAP e o salva em um arquivo .pkl.
     """
-    print("🚀 Iniciando avaliação e criação de artefatos...")
+    try:
+        logger.info(f"Carregando modelo de: {model_path}")
+        model = joblib.load(model_path)
 
-    # --- 1. Carregar Dados e Modelo ---
-    if not all([X_TEST_PATH.exists(), Y_TEST_PATH.exists(), MODEL_PATH.exists()]):
-        print("❌ ERRO: Arquivos de teste ou modelo não encontrados. Execute o pipeline de treino primeiro.")
-        return
+        logger.info("Criando o objeto explicador SHAP...")
+        
+        # O modelo real dentro do pipeline do imblearn é o segundo passo, 'classifier'
+        if hasattr(model, 'steps'):
+            actual_model = model.named_steps['classifier']
+        else:
+            actual_model = model
 
-    X_test = pd.read_csv(X_TEST_PATH)
-    y_test = pd.read_csv(Y_TEST_PATH).squeeze()
-    model_prod = joblib.load(MODEL_PATH)
-    print("✔ Dados de teste e modelo carregados.")
+        # CORREÇÃO FINAL: Inicializar o TreeExplainer apenas com o modelo.
+        # Esta é a forma mais robusta e evita o erro de 'AttributeError'.
+        explainer = shap.TreeExplainer(actual_model)
 
-    # --- 2. NOVO: Criar e Salvar o Explicador SHAP ---
-    print("\n🔥 Criando e salvando o explicador SHAP...")
-    # O explicador SHAP é criado com base no modelo.
-    explainer = shap.Explainer(model_prod)
-    with open(SHAP_EXPLAINER_PATH, 'wb') as f:
-        joblib.dump(explainer, f)
-    print(f"✔ Explicador SHAP salvo com sucesso em: {SHAP_EXPLAINER_PATH}")
+        # Garante que o diretório de saída exista antes de salvar
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            logger.info(f"Diretório criado: {output_dir}")
+        
+        logger.info(f"Salvando o explicador SHAP em: {output_path}")
+        joblib.dump(explainer, output_path)
+        
+        logger.info(f"✅ Explicador SHAP salvo com sucesso em: {output_path}")
 
-    # --- 3. Avaliação do Modelo (código anterior mantido) ---
-    print("\n--- Avaliação do Modelo XGBoost (Produção) ---")
-    y_pred_prod = model_prod.predict(X_test)
-    y_proba_prod = model_prod.predict_proba(X_test)[:, 1]
-    print(classification_report(y_test, y_pred_prod, target_names=['No', 'Yes']))
-    
-    # ... (o restante do código de avaliação e baseline permanece o mesmo) ...
-    print("\n📊 Gerando Curva ROC e calculando AUC...")
-    fpr, tpr, _ = roc_curve(y_test, y_proba_prod, pos_label=1)
-    roc_auc = auc(fpr, tpr)
-    print(f"  - AUC (Area Under Curve): {roc_auc:.2f}")
-    plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'Curva ROC (área = {roc_auc:.2f})')
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('Taxa de Falsos Positivos')
-    plt.ylabel('Taxa de Verdadeiros Positivos (Recall)')
-    plt.title('Curva ROC - Modelo XGBoost')
-    roc_curve_path = REPORTS_DIR / "roc_curve_xgboost.png"
-    plt.savefig(roc_curve_path)
-    print(f"  - Gráfico da Curva ROC salvo em: {roc_curve_path}")
+    except FileNotFoundError as e:
+        logger.error(f"❌ Erro: Arquivo não encontrado. Detalhes: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"❌ Ocorreu um erro inesperado: {e}")
+        raise
 
+def main():
+    """
+    Função principal para analisar os argumentos da linha de comando e executar o script.
+    """
+    parser = argparse.ArgumentParser(
+        description="Cria e salva um objeto explicador SHAP para um modelo treinado."
+    )
+    parser.add_argument("--model-path", type=str, required=True)
+    parser.add_argument("--output-path", type=str, required=True)
+    args = parser.parse_args()
+
+    create_and_save_explainer(
+        model_path=args.model_path,
+        output_path=args.output_path,
+    )
 
 if __name__ == "__main__":
-    create_artifacts()
+    main()
