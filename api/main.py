@@ -35,7 +35,7 @@ app = FastAPI(
 # Caminhos corretos para os artefatos de produção
 MODEL_PATH = os.path.join("models", "production_model.pkl")
 # CORREÇÃO FINAL: Apontar para a lista de features gerada pelo pipeline
-FEATURES_PATH = os.path.join("artifacts", "features", "features.pkl") 
+FEATURES_PATH = os.path.join("models", "features.pkl")
 EXPLAINER_PATH = os.path.join("models", "production_shap_explainer.pkl")
 
 try:

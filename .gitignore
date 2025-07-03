@@ -27,8 +27,8 @@ Thumbs.db
 **/.ipynb_checkpoints/
 
 # Ignorar a pasta de artefatos, exceto o arquivo de features necessário para a API
-/artifacts/*
-!/artifacts/features/features.pkl
+# /artifacts/*
+# !/artifacts/features/features.pkl
 
 # Ignorar dados processados e saídas
 /data/processed/
