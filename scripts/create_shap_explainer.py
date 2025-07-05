@@ -4,10 +4,8 @@ import argparse
 import logging
 import os
 import joblib
-import pandas as pd
 import shap
 
-# Configuração do logging para um feedback claro
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -23,17 +21,13 @@ def create_and_save_explainer(model_path: str, output_path: str):
 
         logger.info("Criando o objeto explicador SHAP...")
         
-        # O modelo real dentro do pipeline do imblearn é o segundo passo, 'classifier'
         if hasattr(model, 'steps'):
             actual_model = model.named_steps['classifier']
         else:
             actual_model = model
 
-        # CORREÇÃO FINAL: Inicializar o TreeExplainer apenas com o modelo.
-        # Esta é a forma mais robusta e evita o erro de 'AttributeError'.
         explainer = shap.TreeExplainer(actual_model)
 
-        # Garante que o diretório de saída exista antes de salvar
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)

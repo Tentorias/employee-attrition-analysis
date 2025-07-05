@@ -1,12 +1,41 @@
-# 🧠 Employee Attrition Analysis — BI & ML Solution
+# 🧠 Análise de Attrition de Funcionários — Solução de BI & ML
 
-Análise e predição da rotatividade de funcionários. O projeto evolui de um pipeline puro de Machine Learning para uma solução completa de Business Intelligence + ML, com recursos estratégicos (Power BI) e táticos (Streamlit) para apoiar decisões no setor de RH.
+Análise e predição da rotatividade de funcionários. O projeto evolui de um pipeline puro de Machine Learning para uma solução completa de Business Intelligence + ML, com recursos estratégicos (Power BI), táticos (Streamlit) e operacionais (API REST) para apoiar decisões no setor de RH.
 
 ---
 
+## 🚀 API Ao Vivo (Deploy na Render)
+
+A API de predição está disponível publicamente. Pode interagir com a documentação em:
+https://employee-attrition-analysis.onrender.com/docs
+
+Nota: *A API está no plano gratuito da Render e pode demorar até 60 segundos para responder à primeira requisição após um período de inatividade.*
+
+```
+curl -X 'POST' \
+  '[https://employee-attrition-analysis.onrender.com/predict](https://employee-attrition-analysis.onrender.com/predict)' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "Age": 41, "BusinessTravel": "Travel_Rarely", "DailyRate": 1102, "Department": "Sales", "DistanceFromHome": 1,
+    "Education": 2, "EducationField": "Life Sciences", "EmployeeCount": 1, "EmployeeNumber": 1, "EnvironmentSatisfaction": 2,
+    "Gender": "Female", "HourlyRate": 94, "JobInvolvement": 3, "JobLevel": 2, "JobRole": "Sales Executive",
+    "JobSatisfaction": 4, "MaritalStatus": "Single", "MonthlyIncome": 5993, "MonthlyRate": 19479, "NumCompaniesWorked": 8,
+    "Over18": "Y", "OverTime": "Yes", "PercentSalaryHike": 11, "PerformanceRating": 3, "RelationshipSatisfaction": 1,
+    "StandardHours": 80, "StockOptionLevel": 0, "TotalWorkingYears": 8, "TrainingTimesLastYear": 0, "WorkLifeBalance": 1,
+    "YearsAtCompany": 6, "YearsInCurrentRole": 4, "YearsSinceLastPromotion": 0, "YearsWithCurrManager": 5
+  }'
+```
+
 ## 🏛️ Arquitetura da Solução
 
-A solução possui duas camadas complementares, alimentadas por uma fonte de dados central:
+A solução possui três camadas complementares, alimentadas por uma fonte de dados central:
+
+- Camada Estratégica (Power BI): Visão macro para a liderança (C-Level, Head de RH) para monitorizar KPIs de turnover.
+
+- Camada Tática (Streamlit): Ferramenta interativa para gestores e analistas de RH diagnosticarem riscos individuais e simularem ações de retenção.
+
+- Camada Operacional (API REST): Serviço on-demand para que outros sistemas possam consumir as predições de forma automatizada.
 
 ### 🔗 Fonte Única da Verdade
 **SQLite Database**: `hr_analytics.db`  
@@ -54,7 +83,7 @@ Centraliza dados brutos, processados e predições.
 - Python 3.10+  
 - Pandas, NumPy  
 - Scikit-learn  
-- XGBoost  
+- LightGBM
 - SMOTEENN  
 - Optuna  
 
@@ -62,14 +91,17 @@ Centraliza dados brutos, processados e predições.
 - Matplotlib, Seaborn  
 - SHAP  
 - Streamlit  
-- Jupyter Notebook  
+- Jupyter Notebook
+- FastAPI (API)
 
 ### ⚙️ Dev & MLOps
 - Poetry  
 - Git & Git LFS  
 - Pytest  
 - Pre-commit, Black, isort, Flake8  
-- GitHub Actions  
+- GitHub Actions
+- Docker
+- Render (Cloud Deploy)
 
 ---
 
@@ -77,6 +109,7 @@ Centraliza dados brutos, processados e predições.
 
 ```
 employee-attrition-analysis/
+├── api/ 
 ├── app/                                # Streamlit app
 ├── artifacts/                          # Modelos e artefatos
 ├── data/                               # Dados brutos e tratados
@@ -89,6 +122,7 @@ employee-attrition-analysis/
 ├── src/                                # Código do pipeline
 ├── tests/                              # Testes automatizados
 ├── .gitignore
+├── Dockerfile 
 ├── .gitattributes
 ├── pre-commit-config.yaml
 ├── pyproject.toml
@@ -172,6 +206,7 @@ poetry run python scripts/evaluate_model_deeply.py
 | ------------------- | -------------- | ------------ | -------------- | ---- |
 | Regressão Logística | 0.70           | 0.34         | 0.46           | -    |
 | XGBoost (Produção)  | 0.54           | 0.66         | 0.60           | 0.87 |
+| LightGBM            | 0.65           | 0.28         | 0.39           | 0.83 |
 ```
 
 - Recall 66%: identifica 2/3 funcionários que sairão (foco no custo de erro).
@@ -186,7 +221,8 @@ poetry run python scripts/evaluate_model_deeply.py
 
 Este F1-Score reflete uma estratégia que prioriza a capacidade de detectar verdadeiros positivos, mesmo com a classe "Yes" sendo minoritária (\~16%).
 
-💼 Impacto no Negócio
+💼 Impacto no Negócio:
+
 - **Power BI**: Identifica áreas críticas com maior risco
 
 - **Streamlit**: Permite análise e ranking por equipe
@@ -194,7 +230,6 @@ Este F1-Score reflete uma estratégia que prioriza a capacidade de detectar verd
 - **SHAP**: Diagnóstico individual instantâneo
 
 - **Simulações**: Testa impacto de ações (ex: aumento salarial) no risco
-
 
 ---
 
