@@ -194,3 +194,9 @@ poetry run python scripts/evaluate_model_deeply.py
 - Target: `Attrition` (Yes/No)
 
 ---
+
+## Considerações Éticas
+
+Este modelo não toma decisões nem classifica funcionários. Ele apenas identifica padrões relacionados à intenção de saída e apresenta insights. Cabe exclusivamente ao RH interpretar e agir.
+
+O risco não está no modelo, mas na inação diante dos sinais.
