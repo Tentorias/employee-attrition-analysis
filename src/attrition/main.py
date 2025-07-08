@@ -13,12 +13,12 @@ def main():
     parser = argparse.ArgumentParser(description="Pipeline de ML para Employee Attrition")
     subparsers = parser.add_subparsers(dest="command", help="Subcomandos disponíveis", required=True)
 
-    # Subcomando 'process'
+    
     process_parser = subparsers.add_parser("process", help="Processar dados brutos")
     process_parser.add_argument("--raw-path", type=str, required=True)
     process_parser.add_argument("--out-path", type=str, required=True)
 
-    # Subcomando 'engineer'
+
     engineer_parser = subparsers.add_parser("engineer", help="Realizar engenharia de features")
     engineer_parser.add_argument("--input-path", type=str, required=True)
     engineer_parser.add_argument("--output-path", type=str, required=True)
@@ -58,9 +58,12 @@ def main():
     explain_parser.add_argument("--x-test-path", type=str, required=True)
     explain_parser.add_argument("--output-path", type=str, default="reports/figures/shap_summary_plot.png")
 
-    # Subcomando 'predict'
-    predict_parser = subparsers.add_parser("predict", help="Fazer uma predição única")
-    # ... (adicione os argumentos do predict se necessário)
+# Subcomando 'predict'
+    predict_parser = subparsers.add_parser("predict", help="Fazer uma predição única a partir de um ficheiro JSON")
+    predict_parser.add_argument("--model-path", required=True, help="Caminho para o modelo treinado (.pkl)")
+    predict_parser.add_argument("--threshold-path", required=True, help="Caminho para o threshold otimizado (.pkl)")
+    predict_parser.add_argument("--features-path", required=True, help="Caminho para a lista de features do modelo (.pkl)")
+    predict_parser.add_argument("--input-file", required=True, help="Caminho para o ficheiro JSON com os dados do funcionário.")
 
     # Subcomando 'run-pipeline'
     run_pipeline_parser = subparsers.add_parser("run-pipeline", help="Executa o pipeline de ponta a ponta.")
@@ -69,7 +72,6 @@ def main():
 
     args = parser.parse_args()
 
-    # Lógica para executar o comando selecionado
     command_functions = {
         "process": process.main,
         "engineer": engineer.main,
@@ -128,12 +130,39 @@ def main():
         )
         logging.info("\n--- ✅ PIPELINE COMPLETO EXECUTADO COM SUCESSO! ---")
     
+
     else:
-        # Executa o comando individual
         main_args = vars(args)
         command_to_run = main_args.pop("command")
-        if command_to_run in command_functions:
-            # Chama a função correspondente ao comando com os argumentos restantes
+
+        if command_to_run == "predict":
+            logging.info("Executando predição única...")
+            try:
+                with open(main_args["input_file"], "r", encoding='utf-8') as f:
+                    input_data = json.load(f)
+                
+                predict_args = {
+                    "model_path": main_args["model_path"],
+                    "threshold_path": main_args["threshold_path"],
+                    "features_path": main_args["features_path"],
+                    "input_data": input_data 
+                }
+
+                prediction, probability = predict.main(**predict_args)
+                if prediction is not None:
+                    print("\n--- Resultado da Predição ---")
+                    print(f"Probabilidade de Saída (Attrition): {probability:.4f}")
+                    print(
+                        f"Decisão Final: {'Funcionário Sai' if prediction == 1 else 'Funcionário Fica'}"
+                    )
+                    print("-----------------------------")
+
+            except FileNotFoundError:
+                logging.error(f"Erro: Arquivo de input não encontrado em '{main_args['input_file']}'")
+            except json.JSONDecodeError:
+                logging.error(f"Erro: O arquivo '{main_args['input_file']}' não contém um JSON válido.")
+
+        elif command_to_run in command_functions:
             command_functions[command_to_run](**main_args)
         else:
             logging.error(f"Comando '{command_to_run}' não reconhecido.")

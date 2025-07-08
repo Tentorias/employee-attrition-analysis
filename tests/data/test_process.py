@@ -6,9 +6,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from attrition.data.process import (cap_outliers, drop_and_map,
-                                    encode_categoricals, load_raw,
-                                    save_processed, transform_logs)
+from attrition.data.process import (cap_outliers,
+                                    drop_and_map,
+                                    encode_categoricals,
+                                    load_raw,
+                                    save_processed, 
+                                    transform_logs)
 
 
 @pytest.fixture

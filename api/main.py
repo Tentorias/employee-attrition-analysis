@@ -1,22 +1,29 @@
 import os
+from dotenv import load_dotenv 
+
+
+load_dotenv()
+
+
 import joblib
 import pandas as pd
 import numpy as np
 import shap
-import psycopg2 # <-- Importar o driver do PostgreSQL
-import json # <-- Importar para lidar com o input
+import psycopg2 
+import json 
 from fastapi import FastAPI, HTTPException
-from datetime import datetime # <-- Importar para o timestamp
+from datetime import datetime 
 from .schemas import EmployeeData, PredictionOut
 
 app = FastAPI(
     title="API de Predição de Attrition de Funcionários",
     description="API para prever a probabilidade de um funcionário deixar a empresa e registrar os resultados.",
-    version="1.1.0" # <-- Versão atualizada
+    version="1.1.0" 
 )
 
-# --- Conexão com Banco de Dados ---
+
 DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 def create_prediction_log_table():
     """Cria a tabela de logs de predição no banco de dados, se não existir."""
@@ -38,7 +45,6 @@ def create_prediction_log_table():
         print("✅ Tabela 'prediction_logs' verificada/criada com sucesso.")
     except psycopg2.OperationalError as e:
         print(f"❌ Erro de conexão com o banco de dados: {e}")
-        # Se a DB_URL não estiver configurada, a API ainda pode funcionar, mas sem log.
     except Exception as e:
         print(f"❌ Erro ao criar a tabela no PostgreSQL: {e}")
     finally:
@@ -55,7 +61,6 @@ try:
     explainer = joblib.load(EXPLAINER_PATH)
     model_features = joblib.load(FEATURES_PATH)
     print(f"✅ Modelo, explicador SHAP e lista de features ({len(model_features)} colunas) carregados com sucesso.")
-    # Chama a função para criar a tabela na inicialização da API
     create_prediction_log_table()
 except FileNotFoundError as e:
     print(f"❌ Erro crítico ao carregar artefatos: {e}.")
@@ -74,8 +79,6 @@ async def predict(employee_data: EmployeeData):
     try:
         input_df = pd.DataFrame([employee_data.dict()])
 
-        # Engenharia de features (replicada do pipeline)
-        # Esta lógica deve ser idêntica à usada no treinamento
         cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18', 'EmployeeNumber']
         input_df.drop(columns=[col for col in cols_to_drop if col in input_df.columns], inplace=True)
         if 'NumCompaniesWorked' in input_df.columns and 'TotalWorkingYears' in input_df.columns:
@@ -89,11 +92,9 @@ async def predict(employee_data: EmployeeData):
 
         final_df = input_df.reindex(columns=model_features, fill_value=0)
 
-        # Garante que o modelo é o classificador final (se estiver num pipeline)
         actual_model = model.named_steps['classifier'] if hasattr(model, 'steps') else model
 
         probability_yes = actual_model.predict_proba(final_df)[0, 1]
-        # Usando um threshold fixo para a predição, idealmente viria de um artefato
         prediction = "Yes" if probability_yes >= 0.5 else "No"
 
         shap_values = explainer.shap_values(final_df)
@@ -117,8 +118,8 @@ async def predict(employee_data: EmployeeData):
                         datetime.now(),
                         prediction,
                         float(probability_yes),
-                        json.dumps(employee_data.dict()), # Salva o input original como JSON
-                        json.dumps(explanation_sorted)   # Salva a explicação como JSON
+                        json.dumps(employee_data.dict()), 
+                        json.dumps(explanation_sorted)   
                     )
                 )
                 conn.commit()

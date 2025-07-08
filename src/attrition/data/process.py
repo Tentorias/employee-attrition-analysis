@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Sobe até a raiz do projeto (project_root)
+
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 
@@ -60,7 +60,7 @@ def main(raw_path: str, out_path: str):
     logging.info(f"🔄 Carregando dados de {raw_path}")
     df = load_raw(raw_path)
 
-    # Lista de colunas numéricas e categóricas a serem processadas
+    
     numeric_cols_to_log = ["MonthlyIncome", "TotalWorkingYears"]
     categorical_cols_to_encode = [
         "BusinessTravel",
@@ -76,14 +76,14 @@ def main(raw_path: str, out_path: str):
 
     logging.info("🔧 Limitando outliers")
     for col in numeric_cols_to_log:
-        # Assumindo que queremos limitar os outliers nas colunas originais
+        
         df[col] = cap_outliers(df[col])
 
     logging.info("🔧 Removendo colunas irrelevantes e mapeando binárias")
     df = drop_and_map(df)
 
     logging.info("🔧 Codificando variáveis categóricas")
-    # Filtra para garantir que apenas as colunas presentes no DataFrame sejam codificadas
+   
     cols_to_encode_present = [col for col in categorical_cols_to_encode if col in df.columns]
     df = encode_categoricals(df, cols_to_encode_present)
 

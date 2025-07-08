@@ -7,7 +7,7 @@ import joblib
 import optuna
 import pandas as pd
 import xgboost as xgb
-from imblearn.over_sampling import SMOTE # <-- MUDANÇA: Voltando para SMOTE
+from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
@@ -28,7 +28,7 @@ def objective(trial, X, y):
     model = xgb.XGBClassifier(**params)
     
     pipeline = ImbPipeline([
-        ('balancer', SMOTE(random_state=42)), # <-- MUDANÇA: Usando SMOTE
+        ('balancer', SMOTE(random_state=42)), 
         ('classifier', model)
     ])
     
@@ -66,7 +66,7 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
-    args = parser.parse_args()
+    args = parse_args()
     run_tuning(
         data_path=args.data_path,
         features_path=args.features_path,

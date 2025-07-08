@@ -15,7 +15,6 @@ from sklearn.metrics import (
 BASE_DIR = Path(__file__).resolve().parent.parent
 X_TEST_PATH = BASE_DIR / "artifacts" / "features" / "X_test.csv"
 Y_TEST_PATH = BASE_DIR / "artifacts" / "features" / "y_test.csv"
-# Caminho para o modelo de produção
 MODEL_PATH = BASE_DIR / "models" / "production_model.pkl"
 REPORTS_DIR = BASE_DIR / "reports"
 REPORTS_DIR.mkdir(exist_ok=True) 
@@ -33,7 +32,7 @@ def evaluate_model_deeply():
         return
 
     X_test = pd.read_csv(X_TEST_PATH)
-    y_test = pd.read_csv(Y_TEST_PATH).squeeze()  # .squeeze() transforma em Series
+    y_test = pd.read_csv(Y_TEST_PATH).squeeze() 
 
     with open(MODEL_PATH, 'rb') as f:
         model_prod = pickle.load(f)
