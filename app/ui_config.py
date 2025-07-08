@@ -129,3 +129,12 @@ VALUE_MAPPING = {
         "Y": "Sim",
     },
 }
+
+UNACTIONABLE_FEATURES = [
+    "Age",
+    "Gender",
+    "MaritalStatus",
+    "DistanceFromHome",
+    "NumCompaniesWorked",
+    "TotalWorkingYears",
+]
