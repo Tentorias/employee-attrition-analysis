@@ -6,11 +6,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 import sys
 
-# Configuração para encontrar a raiz do projeto
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-# Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
 # --- CAMINHOS E CONFIGURAÇÕES ---
@@ -29,19 +27,17 @@ def migrate_data():
     print("Iniciando a migração de dados...")
 
     try:
-        # 1. Conectar ao SQLite e ler os dados
+       
         print(f"📖 Lendo dados do SQLite em: {SQLITE_DB_PATH}")
         with sqlite3.connect(SQLITE_DB_PATH) as conn:
             df = pd.read_sql_query("SELECT * FROM employees", conn)
         print(f"✅ {len(df)} registros lidos do SQLite.")
-
-        # 2. Conectar ao PostgreSQL usando SQLAlchemy
+        
         print("🔗 Conectando ao PostgreSQL...")
         engine = create_engine(POSTGRES_URL)
-
-        # 3. Escrever o DataFrame para uma nova tabela 'employees' no PostgreSQL
+        
         print("⏳ Gravando dados na tabela 'employees' do PostgreSQL... (Isso pode levar um momento)")
-        # 'if_exists='replace'' apaga a tabela se ela já existir, útil para re-executar o script
+        
         df.to_sql('employees', engine, if_exists='replace', index=False)
 
         print("✅ Migração concluída com sucesso!")

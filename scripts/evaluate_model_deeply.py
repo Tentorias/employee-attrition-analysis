@@ -1,7 +1,6 @@
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (

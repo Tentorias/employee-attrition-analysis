@@ -6,9 +6,8 @@ import joblib
 import os
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
-import numpy as np
 
-# Carrega as variáveis de ambiente
+
 load_dotenv()
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
@@ -81,22 +80,21 @@ def translate_feature_name(feature_name, label_map, value_map):
     """
     Traduz nomes de features de forma robusta, lidando com valores que contêm '_'.
     """
-    # 1. Tenta a correspondência direta (para features numéricas)
+   
     if feature_name in label_map:
         return label_map[feature_name]
     
-    # 2. Tenta a correspondência com features categóricas (dummy)
+ 
     for base_feature in value_map.keys():
         prefix = f"{base_feature}_"
         if feature_name.startswith(prefix):
-            # Extrai o valor que vem depois do prefixo
             value = feature_name[len(prefix):]
             if base_feature in label_map and value in value_map[base_feature]:
                 base_label = label_map[base_feature]
                 value_label = value_map[base_feature][value]
                 return f"{base_label}: {value_label}"
             
-    # 3. Se nada funcionar, retorna o nome original
+    
     return feature_name
 
 # --- LÓGICA PRINCIPAL DO APP ---
