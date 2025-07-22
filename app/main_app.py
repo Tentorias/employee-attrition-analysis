@@ -35,7 +35,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 # --- FUNÇÕES DE APOIO ---
 
-@st.cache_data(ttl=3600)  # Cache de 1 hora
+@st.cache_data(ttl=3600)
 def load_employee_data():
     """Carrega os dados brutos dos funcionários do banco de dados PostgreSQL."""
     if not DATABASE_URL:
@@ -119,10 +119,9 @@ else:
         st.session_state.selected_employee_id = df_employees.iloc[0]['EmployeeNumber']
 
     # Define as abas da interface
-    tab_team, tab_individual, tab_simulator = st.tabs([
-        "👥 Risco da Equipe", 
+    tab_team, tab_individual = st.tabs([
+        "👥 Análise de Risco da Equipe", 
         "👤 Diagnóstico Individual", 
-        "🧪 Simulador What-If"
     ])
 
     # --- ABA 1: Risco da Equipe ---
@@ -140,7 +139,7 @@ else:
             selected_emp_key = st.selectbox("Selecione um funcionário para análise:", options=emp_options.keys())
             if st.button("Analisar Funcionário", use_container_width=True, type="primary"):
                 st.session_state.selected_employee_id = emp_options[selected_emp_key]
-                st.success(f"Funcionário {st.session_state.selected_employee_id} carregado! Veja as outras abas.")
+                st.success(f"Funcionário {st.session_state.selected_employee_id} carregado! Verifique a aba de Diagnóstico.")
         
         team_display = team_sorted.copy()
         team_display['risk_percent'] = team_display['predicted_probability'] * 100
@@ -157,7 +156,7 @@ else:
             }
         )
 
-    # Puxa os dados do funcionário selecionado para as outras abas
+    # Puxa os dados do funcionário selecionado para a próxima aba
     employee_data = df_employees[df_employees['EmployeeNumber'] == st.session_state.selected_employee_id].iloc[0]
 
     # --- ABA 2: Diagnóstico Individual ---
@@ -181,43 +180,3 @@ else:
                 st.markdown(f"- **{translate_feature_name(feat)}**")
         else:
             st.info("Nenhum fator de risco acionável proeminente foi identificado.")
-
-    # --- ABA 3: Simulador What-If ---
-    with tab_simulator:
-        st.header("Simulador de Cenários")
-        st.info(f"Simulando para o funcionário **{employee_data['EmployeeNumber']}** com risco atual de **{employee_data['predicted_probability']:.1%}**")
-
-        with st.form(key="simulation_form"):
-            st.subheader("Altere os fatores abaixo para simular intervenções:")
-            
-            sim_input_data = {}
-            # Exemplo de como adicionar campos para simulação (adicione mais conforme necessário)
-            sim_input_data['MonthlyIncome'] = st.slider(
-                "Renda Mensal (R$)", 
-                min_value=int(df_employees['MonthlyIncome'].min()),
-                max_value=int(df_employees['MonthlyIncome'].max()),
-                value=int(employee_data['MonthlyIncome']),
-                step=100
-            )
-            sim_input_data['JobSatisfaction'] = st.select_slider(
-                "Satisfação no Trabalho",
-                options=[1, 2, 3, 4],
-                value=int(employee_data['JobSatisfaction'])
-            )
-
-            submit_button = st.form_submit_button(label="Simular Novo Risco")
-
-        if submit_button:
-            # Cria um DataFrame com os dados da simulação
-            sim_df = employee_data.to_frame().T.copy()
-            for key, value in sim_input_data.items():
-                sim_df[key] = value
-
-            # Prepara os dados e calcula o novo risco
-            X_sim = prepare_data_for_model(sim_df, model_features)
-            new_probability = model.predict_proba(X_sim)[0, 1]
-            
-            st.subheader("Resultado da Simulação")
-            col1, col2 = st.columns(2)
-            col1.metric("Risco Anterior", f"{employee_data['predicted_probability']:.1%}")
-            col2.metric("Novo Risco Simulado", f"{new_probability:.1%}", delta=f"{(new_probability - employee_data['predicted_probability']):.1%}")
