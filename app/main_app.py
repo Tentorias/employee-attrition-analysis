@@ -180,3 +180,20 @@ else:
                 st.markdown(f"- **{translate_feature_name(feat)}**")
         else:
             st.info("Nenhum fator de risco acionável proeminente foi identificado.")
+        
+        # --- INSIGHT ADICIONADO AQUI ---
+        st.markdown("---")
+        st.subheader("Análise Aprofundada do Modelo")
+        with st.expander("Clique para ver um insight sobre 'Horas Extras'"):
+            st.info(
+                """
+                #### Insight Contraintuitivo sobre Horas Extras
+                
+                Nossa análise de sanidade mostrou que, para este modelo, a **falta de horas extras**
+                pode estar associada a um risco maior quando combinada com outros fatores, como baixo salário.
+                
+                **Hipótese:** Isso pode indicar um funcionário **desengajado**, que não busca compensação 
+                adicional e pode já estar procurando outras oportunidades. É um padrão mais complexo que 
+                o modelo foi capaz de aprender, indo além da simples ideia de que "hora extra = burnout".
+                """
+            )
