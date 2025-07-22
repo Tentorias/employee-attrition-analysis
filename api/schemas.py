@@ -1,6 +1,6 @@
 # api/schemas.py
+
 from pydantic import BaseModel
-from typing import Optional
 
 class EmployeeData(BaseModel):
     Age: int

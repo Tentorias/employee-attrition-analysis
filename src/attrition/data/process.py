@@ -8,6 +8,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 def load_raw(path: str) -> pd.DataFrame:
@@ -40,6 +44,10 @@ def main(raw_path: str, out_path: str):
     logging.info(f"🔄 Carregando dados de {raw_path}")
     df = load_raw(raw_path)
 
+<<<<<<< HEAD
+=======
+    
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
     numeric_cols_to_log = ["MonthlyIncome", "TotalWorkingYears"]
     
     # <<< LISTA CORRIGIDA AQUI >>>
@@ -57,12 +65,20 @@ def main(raw_path: str, out_path: str):
 
     logging.info("🔧 Limitando outliers")
     for col in numeric_cols_to_log:
+<<<<<<< HEAD
+=======
+        
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
         df[col] = cap_outliers(df[col])
 
     logging.info("🔧 Removendo colunas irrelevantes e mapeando binárias")
     df = drop_and_map(df)
 
     logging.info("🔧 Codificando variáveis categóricas")
+<<<<<<< HEAD
+=======
+   
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
     cols_to_encode_present = [col for col in categorical_cols_to_encode if col in df.columns]
     df = encode_categoricals(df, cols_to_encode_present)
 

@@ -32,7 +32,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         df_encoded = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=float)
     else:
         logger.info("ℹ️ Nenhuma coluna categórica para codificar.")
-        df_encoded = df.copy() # Se não houver colunas, apenas retorna uma cópia
+        df_encoded = df.copy() 
 
     return df_encoded
 

@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 # src/attrition/models/train.py (CORRIGIDO)
 
 import argparse
 import logging
 import os # <<< ADICIONADO
+=======
+import argparse
+import logging
+import os
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 import joblib
 import numpy as np
 import pandas as pd
@@ -29,6 +35,7 @@ def train_model(X, y, random_state=42):
     k_neighbors_smote = 5
     n_minority_samples = y.value_counts().min()
 
+<<<<<<< HEAD
     # <<< ALTERADO PARA USAR O XGBClassifier do seu 'tunning.py' >>>
     # Usei o XGBClassifier, pois seu 'tunning.py' e 'main.py' se referem a ele.
     model_instance = XGBClassifier(
@@ -37,16 +44,32 @@ def train_model(X, y, random_state=42):
         random_state=random_state,
         n_jobs=-1
     )
+=======
+    xgb_params = {
+        'objective': 'binary:logistic',
+        'eval_metric': 'logloss',
+        'random_state': random_state,
+        'n_jobs': -1
+    }
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 
     if n_minority_samples > k_neighbors_smote:
         logging.info("Amostras suficientes. Treinando o modelo com XGBoost e SMOTE...")
         model = Pipeline([
             ("smote", SMOTE(random_state=random_state, k_neighbors=k_neighbors_smote)),
+<<<<<<< HEAD
             ("classifier", model_instance)
         ])
     else:
         logging.warning(f"Não foi possível usar SMOTE. Treinando XGBoost sem SMOTE.")
         model = model_instance
+=======
+            ("classifier", XGBClassifier(**xgb_params))
+        ])
+    else:
+        logging.warning(f"Não foi possível usar SMOTE. Treinando XGBoost sem SMOTE.")
+        model = XGBClassifier(**xgb_params)
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 
     model.fit(X, y)
     return model
@@ -69,16 +92,27 @@ def main(in_path, features_path, model_path, threshold_path=None, target_col="At
     X = df[features]
     y = df[target_col]
 
+    def ensure_dir(file_path):
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+            logging.info(f"Diretório criado: {directory}")
+
     if retrain_full_data:
         logging.info("Retreinando o modelo com todos os dados disponíveis...")
         model = train_model(X, y, random_state)
+<<<<<<< HEAD
         ensure_dir(model_path) # <<< CORREÇÃO APLICADA
+=======
+        ensure_dir(model_path)
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
         joblib.dump(model, model_path)
         logging.info(f"Modelo final salvo em: {model_path}")
     else:
         logging.info("Dividindo os dados em conjuntos de treino e teste...")
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
         model = train_model(X_train, y_train, random_state)
+<<<<<<< HEAD
         
         ensure_dir(model_path) # <<< CORREÇÃO APLICADA
         joblib.dump(model, model_path)
@@ -100,6 +134,23 @@ def main(in_path, features_path, model_path, threshold_path=None, target_col="At
 
 # ... (o resto do arquivo, como parse_args e if __name__ == "__main__", permanece igual)
 # Adicione o resto do seu código aqui se houver mais alguma coisa.
+=======
+        ensure_dir(model_path)
+        joblib.dump(model, model_path)
+        logging.info(f"Modelo treinado salvo em: {model_path}")
+        if threshold_path:
+            optimal_thr = optimize_threshold(model, X_test, y_test)
+            ensure_dir(threshold_path)
+            joblib.dump(optimal_thr, threshold_path)
+            logging.info(f"Threshold otimizado salvo em: {threshold_path}")
+        if x_test_out and y_test_out:
+            ensure_dir(x_test_out)
+            X_test.to_csv(x_test_out, index=False)
+            ensure_dir(y_test_out)
+            y_test.to_csv(y_test_out, index=False)
+            logging.info(f"Dados de teste salvos em: {x_test_out} e {y_test_out}")
+
+>>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 def parse_args():
     parser = argparse.ArgumentParser(description="Treinamento do Modelo de Attrition")
     parser.add_argument("--in-path", type=str, required=True)

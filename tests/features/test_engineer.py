@@ -4,8 +4,9 @@ import sys
 
 import pandas as pd
 
-from attrition.features.engineer import (engineer_features, load_processed,
-                                         save_features)
+from attrition.features.engineer import (engineer_features,
+                                        load_processed,
+                                        save_features)
 
 
 def test_engineer_features_all_types():
@@ -15,7 +16,7 @@ def test_engineer_features_all_types():
             "NumCompaniesWorked": [1, 2, 0],
             "Department": ["HR", "IT", "Sales"],
             "JobRole": ["Manager", "Staff", "Staff"],
-            "Attrition": [1, 0, 1],  # Coluna adicionada
+            "Attrition": [1, 0, 1],  
         }
     )
     df_feat = engineer_features(df)
@@ -29,7 +30,7 @@ def test_engineer_features_no_object():
         {
             "TotalWorkingYears": [1, 2],
             "NumCompaniesWorked": [1, 2],
-            "Attrition": [0, 1],  # Coluna adicionada
+            "Attrition": [0, 1],  
         }
     )
     df_feat = engineer_features(df)
@@ -55,7 +56,7 @@ def test_engineer_cli(tmp_path):
             "TotalWorkingYears": [1, 2],
             "NumCompaniesWorked": [1, 2],
             "Department": ["HR", "IT"],
-            "Attrition": [0, 1], # Coluna adicionada
+            "Attrition": [0, 1], 
         }
     )
     df.to_csv(in_file, index=False)
@@ -69,7 +70,7 @@ def test_engineer_cli(tmp_path):
             str(in_file),
             "--output-path",
             str(out_file),
-            "--features-out-path", # Argumento adicionado
+            "--features-out-path",
             str(features_out_file),
         ],
         capture_output=True,
