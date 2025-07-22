@@ -107,7 +107,6 @@ def main():
             in_path=features_matrix_path,
             features_path=features_list_path,
             model_path=model_path,
-            threshold_path=threshold_path,
             target_col="Attrition",
             x_test_out=x_test_path,
             y_test_out=y_test_path,
@@ -116,7 +115,6 @@ def main():
         logging.info("\n[ETAPA 4/4] Avaliando modelo final...")
         evaluate.main(
             model_path=model_path,
-            threshold_path=threshold_path,
             x_test_path=x_test_path,
             y_test_path=y_test_path,
         )

@@ -11,12 +11,13 @@ packages = [{include = "src"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 pandas = "^2.2.2"
-scikit-learn = "^1.5.0"
+numpy = "1.26.4"
+scikit-learn = "1.4.2"
 imblearn = "^0.0"
 xgboost = "^2.1.0"
 optuna = "^3.6.1"
 joblib = "^1.4.2"
-sqlalchemy = "^2.0.30" # <<< A DEPENDÊNCIA QUE FALTAVA
+sqlalchemy = "^2.0.30" 
 psycopg2-binary = "^2.9.9"
 fastapi = "^0.111.0"
 uvicorn = {extras = ["standard"], version = "^0.30.1"}
