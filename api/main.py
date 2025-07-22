@@ -1,13 +1,4 @@
-# api/main.py
-# -*- coding: utf-8 -*-
-
-"""
-Módulo principal da API de Predição de Attrition de Funcionários.
-
-Este módulo usa FastAPI para criar os endpoints, carrega o modelo de Machine Learning
-e o explicador SHAP na inicialização, e define a lógica para
-processar os dados, fazer predições e retornar explicações.
-"""
+# api/main.py (VERSÃO ATUALIZADA)
 
 import os
 import joblib
@@ -15,91 +6,86 @@ import pandas as pd
 import numpy as np
 import shap
 from fastapi import FastAPI, HTTPException
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
 from .schemas import EmployeeData, PredictionOut
 
-# ----------------- CONFIGURAÇÃO DA API ----------------- #
+# --- Carregar variáveis de ambiente ---
+load_dotenv()
 
 app = FastAPI(
     title="API de Predição de Attrition de Funcionários",
-    description="""
-    API para prever a probabilidade de um funcionário deixar a empresa.
-    Recebe os dados brutos de um funcionário e retorna a predição (Sim/Não),
-    a probabilidade de saída e uma explicação dos fatores mais influentes
-    baseada em valores SHAP.
-    """,
-    version="1.0.0"
+    description="API para prever a probabilidade de um funcionário deixar a empresa e logar o resultado.",
+    version="1.0.1" # Versão atualizada
 )
 
-# ----------------- CARREGAMENTO DOS ARTEFATOS DE PRODUÇÃO ----------------- #
-
-# Caminhos corretos para os artefatos de produção
+# --- Carregamento dos Artefactos ---
 MODEL_PATH = os.path.join("models", "production_model.pkl")
-# CORREÇÃO FINAL: Apontar para a lista de features gerada pelo pipeline
-FEATURES_PATH = os.path.join("models", "features.pkl")
+FEATURES_PATH = os.path.join("artifacts", "features", "features.pkl")
 EXPLAINER_PATH = os.path.join("models", "production_shap_explainer.pkl")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 try:
     model = joblib.load(MODEL_PATH)
     explainer = joblib.load(EXPLAINER_PATH)
     model_features = joblib.load(FEATURES_PATH)
-    print(f"✅ Modelo, explicador SHAP e lista de features ({len(model_features)} colunas) carregados com sucesso.")
-except FileNotFoundError as e:
-    print(f"❌ Erro crítico ao carregar artefatos: {e}.")
-    print("Certifique-se de que todos os artefatos de produção existem.")
-    raise
+    # --- Conexão com o Banco de Dados ---
+    engine = create_engine(DATABASE_URL) if DATABASE_URL else None
+    print(f"✅ Modelo, explicador e lista de features carregados.")
+    if engine:
+        print("✅ Conexão com o banco de dados estabelecida.")
+    else:
+        print("⚠️ Aviso: DATABASE_URL não encontrada. O logging de predições está desativado.")
 
-# ----------------- ENDPOINTS DA API ----------------- #
+except FileNotFoundError as e:
+    print(f"❌ Erro crítico ao carregar artefactos: {e}.")
+    raise
 
 @app.get("/health", summary="Verifica a saúde da API")
 async def health_check():
-    """
-    Endpoint de health check. Retorna um status 'ok' se a API estiver
-    operacional. Útil para monitoramento.
-    """
     return {"status": "ok"}
-
 
 @app.post("/predict", response_model=PredictionOut, summary="Realiza a predição de attrition")
 async def predict(employee_data: EmployeeData):
-    """
-    Recebe os dados de um funcionário e realiza a predição de attrition,
-    replicando exatamente o pipeline de engenharia de features.
-    """
     try:
         input_df = pd.DataFrame([employee_data.dict()])
 
-        # 1. Replicar a engenharia de features do script 'engineer.py'
-        # Remover colunas constantes que não são usadas no treinamento
+        # Engenharia de features (replicada do pipeline)
+        # ... (seu código de engenharia de features existente) ...
         cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
         input_df.drop(columns=[col for col in cols_to_drop if col in input_df.columns], inplace=True)
-
-        input_df['YearsPerCompany'] = input_df['TotalWorkingYears'] / (input_df['NumCompaniesWorked'] + 1)
-
-        # Identificar TODAS as colunas categóricas para aplicar One-Hot Encoding
+        if 'NumCompaniesWorked' in input_df.columns and 'TotalWorkingYears' in input_df.columns:
+            input_df['YearsPerCompany'] = input_df['TotalWorkingYears'] / (input_df['NumCompaniesWorked'] + 1)
         categorical_cols = input_df.select_dtypes(include=["object"]).columns.tolist()
-        
         if categorical_cols:
             input_df = pd.get_dummies(input_df, columns=categorical_cols, drop_first=True, dtype=float)
 
-        # 2. Reindexar para garantir que as colunas correspondem ao modelo
         final_df = input_df.reindex(columns=model_features, fill_value=0)
         
-        # 3. Fazer a predição
-        # O modelo real está dentro do pipeline do imblearn
-        if hasattr(model, 'steps'):
-            actual_model = model.named_steps['classifier']
-        else:
-            actual_model = model
-            
+        actual_model = model.named_steps['classifier'] if hasattr(model, 'steps') else model
         probability_yes = actual_model.predict_proba(final_df)[0, 1]
-        prediction = "Yes" if probability_yes >= 0.5 else "No"
+        prediction = "Yes" if probability_yes >= 0.5 else "No" # O threshold da API pode ser simples
 
-        # 4. Gerar a explicação com SHAP
         shap_values = explainer.shap_values(final_df)
-        explanation = dict(zip(final_df.columns, shap_values[0]))
+        explanation_raw = dict(zip(final_df.columns, shap_values[0]))
+        explanation = {k: float(v) for k, v in explanation_raw.items()}
         explanation = dict(sorted(explanation.items(), key=lambda item: abs(item[1]), reverse=True))
 
-        # 5. Retornar o resultado completo
+        # --- LÓGICA DE LOGGING NO BANCO DE DADOS ---
+        if engine:
+            try:
+                log_df = pd.DataFrame({
+                    'EmployeeNumber': [employee_data.EmployeeNumber],
+                    'predicted_probability': [probability_yes],
+                    'prediction_timestamp': [pd.Timestamp.now()]
+                })
+                # Use 'append'. O to_sql criará a tabela na primeira vez.
+                log_df.to_sql('predictions', con=engine, if_exists='append', index=False)
+            except Exception as db_error:
+                # Não quebra a API se o log falhar, apenas avisa no console.
+                print(f"⚠️ Erro ao salvar predição no banco de dados: {db_error}")
+
         return {
             "prediction": prediction,
             "probability_yes": float(probability_yes),

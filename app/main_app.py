@@ -2,7 +2,9 @@ import sys
 from pathlib import Path
 import streamlit as st
 import pandas as pd
-import sqlite3
+import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
 import joblib
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
@@ -26,8 +28,8 @@ except ImportError:
 
 # --- 1. Constantes e Configurações Corrigidas ---
 MODEL_PATH = project_root / "models" / "production_model.pkl"
-FEATURES_PATH = project_root / "artifacts" / "features" / "features.pkl" # Usando a lista de features correta
-SHAP_EXPLAINER_PATH = project_root / "models" / "production_shap_explainer.pkl" # Usando o explicador correto
+FEATURES_PATH = project_root / "artifacts" / "features" / "features.pkl"
+SHAP_EXPLAINER_PATH = project_root / "models" / "production_shap_explainer.pkl"
 DB_PATH = project_root / "database" / "hr_analytics.db"
 
 NON_EDITABLE_FIELDS = ["Age", "Gender", "MaritalStatus", "DistanceFromHome", "Department", "JobRole"]
@@ -45,18 +47,33 @@ FEATURE_GROUPS = {
 
 # --- 2. Funções de Carregamento e Análise Corrigidas ---
 
-@st.cache_data
-def load_data_from_db():
-    """Carrega os dados completos do banco de dados."""
+@st.cache_data(ttl=3600)
+def load_data():
+    """
+    Carrega os dados da tabela 'employees' e 'predictions' do banco de dados PostgreSQL.
+    """
+    load_dotenv()
+    db_url = os.getenv("DATABASE_URL")
+
+    if not db_url:
+        st.error("A variável de ambiente DATABASE_URL não foi encontrada. Configure-a no arquivo .env.")
+        return pd.DataFrame()
+
     try:
-        with sqlite3.connect(DB_PATH) as conn:
-            df_employees = pd.read_sql_query("SELECT * FROM employees", conn)
-            df_predictions = pd.read_sql_query("SELECT * FROM predictions", conn)
-        df_full = pd.merge(df_employees, df_predictions[['EmployeeNumber', 'predicted_probability']], on='EmployeeNumber', how='left')
-        df_full['predicted_probability'].fillna(0, inplace=True)
-        return df_full
+        engine = create_engine(db_url)
+        with engine.connect() as conn:
+            df_emp = pd.read_sql_query("SELECT * FROM employees", conn)
+            try:
+                df_pred = pd.read_sql_query("SELECT * FROM predictions", conn)
+                df = pd.merge(df_emp, df_pred[['EmployeeNumber', 'predicted_probability']], on='EmployeeNumber', how='left')
+                df['predicted_probability'].fillna(0, inplace=True)
+            except Exception:
+                st.warning("Tabela 'predictions' não encontrada no banco. O risco será exibido como 0%.")
+                df = df_emp
+                df['predicted_probability'] = 0.0
+        return df
     except Exception as e:
-        st.error(f"Erro ao carregar dados do banco de dados: {e}.")
+        st.error(f"Erro ao conectar ou carregar dados do PostgreSQL: {e}")
         return pd.DataFrame()
 
 @st.cache_resource
@@ -81,23 +98,14 @@ def prepare_data_for_model(input_df: pd.DataFrame, model_features: list):
     replicando a lógica da API e do pipeline de treino.
     """
     df_processed = input_df.copy()
-
-    # Remover colunas constantes que não são usadas no treinamento
     cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
     df_processed.drop(columns=[col for col in cols_to_drop if col in df_processed.columns], inplace=True)
-
-    # Replicar a engenharia de features do script 'engineer.py'
     df_processed['YearsPerCompany'] = (df_processed['TotalWorkingYears'] / (df_processed['NumCompaniesWorked'] + 1)).round(4)
-
-    # Identificar TODAS as colunas categóricas para aplicar One-Hot Encoding
     categorical_cols = df_processed.select_dtypes(include=["object"]).columns.tolist()
     if 'Attrition' in categorical_cols:
         categorical_cols.remove('Attrition')
-
     if categorical_cols:
         df_processed = pd.get_dummies(df_processed, columns=categorical_cols, drop_first=True, dtype=float)
-
-    # Reindexar para garantir que as colunas correspondem ao modelo
     X_final = df_processed.reindex(columns=model_features, fill_value=0)
     return X_final
 
@@ -124,7 +132,6 @@ def generate_form_widgets(container, features_to_display: list, df_reference: pd
             options_map = VALUE_MAPPING.get(col, {})
             friendly_options = list(options_map.values())
             try:
-                # Corrigir para lidar com valores que podem não estar no mapa
                 default_option = VALUE_MAPPING[col].get(default_val, friendly_options[0])
                 default_index = friendly_options.index(default_option)
             except (ValueError, KeyError): 
@@ -143,7 +150,7 @@ def generate_form_widgets(container, features_to_display: list, df_reference: pd
 
 
 # --- 3. Lógica Principal da UI ---
-df_full = load_data_from_db()
+df_full = load_data() # <<< CORREÇÃO APLICADA AQUI
 model_pipeline, model_features, explainer = load_model_artifacts()
 
 def update_employee_state(employee_id):
@@ -157,7 +164,6 @@ def update_employee_state(employee_id):
         employee_df = pd.DataFrame([employee_data])
         X_final = prepare_data_for_model(employee_df, model_features)
         
-        # Usa o explainer para obter os valores SHAP
         shap_values = explainer.shap_values(X_final)
         top_contributors = get_top_shap_contributors(shap_values[0], X_final.columns)
         st.session_state.initial_analysis = {"top_contributors": top_contributors}
@@ -173,7 +179,6 @@ st.title("💡 Ferramenta Tática de Análise de Turnover")
 if df_full.empty or model_pipeline is None:
     st.warning("Não foi possível carregar os dados ou o modelo. A aplicação não pode continuar.")
 else:
-    # Extrai o modelo real do pipeline para uso
     actual_model = model_pipeline.named_steps['classifier'] if hasattr(model_pipeline, 'steps') else model_pipeline
 
     tab_analise_equipe, tab_simulador = st.tabs(["👥 Análise de Risco da Equipe", "👤 Simulação Individual"])
@@ -239,15 +244,13 @@ else:
                         sim_df = pd.DataFrame([input_data])
                         X_final_sim = prepare_data_for_model(sim_df, model_features)
                         
-                        # Usa o modelo real para predição
                         probability = actual_model.predict_proba(X_final_sim)[:, 1][0]
                         
-                        # Usa o threshold de 0.5 por padrão, ou carrega um se disponível
                         threshold = 0.5
                         try:
                             threshold = joblib.load(project_root / "artifacts" / "models" / "threshold_optimizado.pkl")
                         except:
-                            pass # Usa 0.5 se não encontrar
+                            pass
 
                         prediction = 1 if probability >= threshold else 0
                         st.session_state.simulation_result = {"prediction": prediction, "probability": probability}
