@@ -1,41 +1,42 @@
-[project]
+# Este é o formato que o Poetry entende
+[tool.poetry]
 name = "employee-attrition-analysis"
 version = "0.1.0"
-description = "Análise e predição da rotatividade de funcionários com machine learning."
-authors = [
-    {name = "tentorias",email = "100281291+Tentorias@users.noreply.github.com"}
-]
-license = {text = "MIT"}
+description = "Projeto de análise e predição de rotatividade de funcionários com BI e Machine Learning."
+authors = ["tentorias <100281291+Tentorias@users.noreply.github.com>"]
 readme = "README.md"
-requires-python = "^3.10"
-dependencies = [
-    "pandas (>=2.3.0,<3.0.0)",
-    "numpy (>=1.24,<2.0)",
-    "scikit-learn (>=1.6.1,<2.0.0)",
-    "xgboost (>=3.0.2,<4.0.0)",
-    "imbalanced-learn (>=0.13.0,<0.14.0)",
-    "joblib (>=1.5.1,<2.0.0)",
-    "streamlit (>=1.46.0,<2.0.0)",
-    "shap (>=0.48.0,<0.49.0)",
-    "lightgbm (>=4.6.0,<5.0.0)",
-    "fastapi (>=0.115.14,<0.116.0)",
-    "uvicorn[standard] (>=0.35.0,<0.36.0)",
-    "python-multipart (>=0.0.20,<0.0.21)",
-    "psycopg2-binary (>=2.9.10,<3.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "tqdm (>=4.67.1,<5.0.0)"
-]
+packages = [{include = "src"}]
+
+# Esta seção lista todas as dependências do projeto
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.2"
+scikit-learn = "^1.5.0"
+imblearn = "^0.0"
+xgboost = "^2.1.0"
+optuna = "^3.6.1"
+joblib = "^1.4.2"
+sqlalchemy = "^2.0.30" # <<< A DEPENDÊNCIA QUE FALTAVA
+psycopg2-binary = "^2.9.9"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.30.1"}
+streamlit = "^1.36.0"
+shap = "^0.45.1"
+python-dotenv = "^1.0.1"
+tqdm = "^4.66.4"
+lightgbm = "^4.6.0"
+python-multipart = "^0.0.9"
 
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
+# Esta seção lista as dependências de desenvolvimento
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.4.1"
-pytest-cov = "^6.2.1"
-black = "^25.1.0"
-isort = "^6.0.1"
-flake8 = "^7.3.0"
-pre-commit = "^4.2.0"
+pytest = "^8.2.2"
+pre-commit = "^3.7.1"
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
 
+# Seção de configuração do build
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
