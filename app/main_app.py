@@ -1,81 +1,43 @@
 import sys
+import os
 from pathlib import Path
-import streamlit as st
-import pandas as pd
-<<<<<<< HEAD
-import os
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
-=======
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
+
 import joblib
-import os
-from sqlalchemy import create_engine
+import pandas as pd
+import streamlit as st
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
-
-load_dotenv()
-
-# --- CONFIGURAÇÃO DA PÁGINA ---
+# --- CONFIGURAÇÕES INICIAIS ---
 st.set_page_config(
-    page_title="Análise de Turnover",
+    page_title="Diagnóstico de Turnover",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+load_dotenv()
 
-# --- CONFIG IMPORT ---
+# Adiciona o caminho raiz do projeto para permitir importações locais
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
+# Tenta importar configurações de UI, com fallback gracioso
 try:
     from app.ui_config import LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES
 except ImportError:
     LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES = {}, {}, []
-    st.warning("Arquivo ui_config.py não encontrado ou incompleto. Usando labels padrão.")
+    st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")
 
 # --- CONSTANTES ---
 MODEL_PATH = project_root / "models" / "production_model.pkl"
 FEATURES_PATH = project_root / "artifacts" / "features" / "features.pkl"
 SHAP_EXPLAINER_PATH = project_root / "models" / "production_shap_explainer.pkl"
-<<<<<<< HEAD
-DB_PATH = project_root / "database" / "hr_analytics.db"
-=======
 DATABASE_URL = os.getenv("DATABASE_URL")
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 
-# --- FUNÇÕES ---
+# --- FUNÇÕES DE APOIO ---
 
-<<<<<<< HEAD
-@st.cache_data(ttl=3600)
-def load_data():
-    """
-    Carrega os dados da tabela 'employees' e 'predictions' do banco de dados PostgreSQL.
-    """
-    load_dotenv()
-    db_url = os.getenv("DATABASE_URL")
-
-    if not db_url:
-        st.error("A variável de ambiente DATABASE_URL não foi encontrada. Configure-a no arquivo .env.")
-        return pd.DataFrame()
-
-    try:
-        engine = create_engine(db_url)
-        with engine.connect() as conn:
-            df_emp = pd.read_sql_query("SELECT * FROM employees", conn)
-            try:
-                df_pred = pd.read_sql_query("SELECT * FROM predictions", conn)
-                df = pd.merge(df_emp, df_pred[['EmployeeNumber', 'predicted_probability']], on='EmployeeNumber', how='left')
-                df['predicted_probability'].fillna(0, inplace=True)
-            except Exception:
-                st.warning("Tabela 'predictions' não encontrada no banco. O risco será exibido como 0%.")
-                df = df_emp
-                df['predicted_probability'] = 0.0
-        return df
-    except Exception as e:
-        st.error(f"Erro ao conectar ou carregar dados do PostgreSQL: {e}")
-=======
-@st.cache_data
+@st.cache_data(ttl=3600)  # Cache de 1 hora
 def load_employee_data():
+    """Carrega os dados brutos dos funcionários do banco de dados PostgreSQL."""
     if not DATABASE_URL:
         st.error("A URL do banco de dados (DATABASE_URL) não foi configurada.")
         return pd.DataFrame()
@@ -84,258 +46,178 @@ def load_employee_data():
         df_emp = pd.read_sql_query("SELECT * FROM employees", engine)
         return df_emp
     except Exception as e:
-        st.error(f"Erro ao carregar dados dos funcionários do PostgreSQL: {e}")
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
+        st.error(f"Erro ao carregar dados dos funcionários: {e}")
         return pd.DataFrame()
 
 @st.cache_resource
 def load_model_artifacts():
+    """Carrega os artefatos de ML (modelo, features, explicador SHAP)."""
     try:
         model = joblib.load(MODEL_PATH)
         features = joblib.load(FEATURES_PATH)
         explainer = joblib.load(SHAP_EXPLAINER_PATH)
         return model, features, explainer
+    except FileNotFoundError:
+        st.error("Erro: Arquivos de modelo (.pkl) não encontrados. Execute o pipeline de treinamento.")
+        return None, None, None
     except Exception as e:
         st.error(f"Erro ao carregar artefatos do modelo: {e}")
         return None, None, None
 
-<<<<<<< HEAD
-def prepare_data_for_model(input_df: pd.DataFrame, model_features: list):
-    """
-    Aplica a engenharia de features e alinha com o modelo,
-    replicando a lógica da API e do pipeline de treino.
-    """
-    df_processed = input_df.copy()
-    cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
-    df_processed.drop(columns=[col for col in cols_to_drop if col in df_processed.columns], inplace=True)
-    df_processed['YearsPerCompany'] = (df_processed['TotalWorkingYears'] / (df_processed['NumCompaniesWorked'] + 1)).round(4)
-    categorical_cols = df_processed.select_dtypes(include=["object"]).columns.tolist()
-    if 'Attrition' in categorical_cols:
-        categorical_cols.remove('Attrition')
-    if categorical_cols:
-        df_processed = pd.get_dummies(df_processed, columns=categorical_cols, drop_first=True, dtype=float)
-    X_final = df_processed.reindex(columns=model_features, fill_value=0)
-    return X_final
-
-def get_top_shap_contributors(shap_values, feature_names):
-    """Extrai os 3 principais fatores que aumentam o risco."""
-    feature_shap_map = dict(zip(feature_names, shap_values))
-    risk_factors = {k: v for k, v in feature_shap_map.items() if v > 0}
-    sorted_risk_factors = sorted(risk_factors.items(), key=lambda item: item[1], reverse=True)
-    return sorted_risk_factors[:3]
-
-def generate_form_widgets(container, features_to_display: list, df_reference: pd.DataFrame, default_values: dict, employee_id: int):
-    """Gera os widgets do formulário com chaves dinâmicas."""
-    input_data = {}
-    for col in features_to_display:
-        if col not in df_reference.columns: continue
-        
-        friendly_label = LABEL_MAPPING.get(col, col)
-        help_text = HELP_TEXTS.get(col)
-        default_val = default_values.get(col)
-        is_disabled = col in NON_EDITABLE_FIELDS
-        widget_key = f"{col}_{employee_id}"
-
-        if col in VALUE_MAPPING:
-            options_map = VALUE_MAPPING.get(col, {})
-            friendly_options = list(options_map.values())
-            try:
-                default_option = VALUE_MAPPING[col].get(default_val, friendly_options[0])
-                default_index = friendly_options.index(default_option)
-            except (ValueError, KeyError): 
-                default_index = 0
-            
-            selected_friendly = container.selectbox(friendly_label, friendly_options, index=default_index, help=help_text, key=f"sb_{widget_key}", disabled=is_disabled)
-            input_data[col] = REVERSED_VALUE_MAPPING.get(col, {}).get(selected_friendly)
-        elif pd.api.types.is_numeric_dtype(df_reference[col]):
-            min_val, max_val = int(df_reference[col].min()), int(df_reference[col].max())
-            step = 100 if "Income" in col else 1
-            val = int(default_val) if default_val is not None else min_val
-            if val < min_val: val = min_val
-            if val > max_val: val = max_val
-            input_data[col] = container.slider(friendly_label, min_val, max_val, val, step, help=help_text, key=f"sl_{widget_key}", disabled=is_disabled)
-    return input_data
-
-
-# --- 3. Lógica Principal da UI ---
-df_full = load_data() # <<< CORREÇÃO APLICADA AQUI
-model_pipeline, model_features, explainer = load_model_artifacts()
-
-def update_employee_state(employee_id):
-    """Carrega os dados do funcionário e calcula sua análise de risco inicial."""
-    employee_data = df_full[df_full['EmployeeNumber'] == employee_id].iloc[0].to_dict()
-=======
 def prepare_data_for_model(df, features):
+    """Prepara o DataFrame para ser compatível com o modelo."""
     df_proc = df.copy()
     cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
     df_proc.drop(columns=[col for col in cols_to_drop if col in df_proc.columns], errors='ignore', inplace=True)
     if 'TotalWorkingYears' in df_proc.columns and 'NumCompaniesWorked' in df_proc.columns:
-        df_proc['YearsPerCompany'] = df_proc.apply(lambda row: row['TotalWorkingYears'] / row['NumCompaniesWorked'] if row['NumCompaniesWorked'] > 0 else row['TotalWorkingYears'], axis=1).round(4)
+        df_proc['YearsPerCompany'] = df_proc.apply(
+            lambda row: row['TotalWorkingYears'] / row['NumCompaniesWorked'] if row['NumCompaniesWorked'] > 0 else row['TotalWorkingYears'], 
+            axis=1
+        ).round(4)
     df_proc = pd.get_dummies(df_proc, drop_first=True, dtype=float)
     X = df_proc.reindex(columns=features, fill_value=0)
     return X
 
 def get_top_factors(shap_values, features, top_n=5):
+    """Extrai os principais fatores de risco a partir dos valores SHAP."""
     shap_map = dict(zip(features, shap_values))
     risk_factors = {k: v for k, v in shap_map.items() if v > 0}
-    sorted_factors = sorted(risk_factors.items(), key=lambda x: x[1], reverse=True)
-    return sorted_factors[:top_n]
+    return sorted(risk_factors.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
-# --- FUNÇÃO DE TRADUÇÃO MELHORADA ---
-def translate_feature_name(feature_name, label_map, value_map):
-    """
-    Traduz nomes de features de forma robusta, lidando com valores que contêm '_'.
-    """
-   
-    if feature_name in label_map:
-        return label_map[feature_name]
+def translate_feature_name(feature_name):
+    """Traduz nomes de features de forma robusta para exibição."""
+    if feature_name in LABEL_MAPPING:
+        return LABEL_MAPPING[feature_name]
     
- 
-    for base_feature in value_map.keys():
+    for base_feature, mappings in VALUE_MAPPING.items():
         prefix = f"{base_feature}_"
         if feature_name.startswith(prefix):
             value = feature_name[len(prefix):]
-            if base_feature in label_map and value in value_map[base_feature]:
-                base_label = label_map[base_feature]
-                value_label = value_map[base_feature][value]
-                return f"{base_label}: {value_label}"
+            base_label = LABEL_MAPPING.get(base_feature, base_feature)
+            value_label = next((v_label for v_key, v_label in mappings.items() if str(v_key) == value), value)
+            return f"{base_label}: {value_label}"
             
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
-    
-    return feature_name
+    return feature_name.replace('_', ' ')
 
-<<<<<<< HEAD
-    if model_pipeline and explainer and model_features:
-        employee_df = pd.DataFrame([employee_data])
-        X_final = prepare_data_for_model(employee_df, model_features)
-        
-        shap_values = explainer.shap_values(X_final)
-        top_contributors = get_top_shap_contributors(shap_values[0], X_final.columns)
-        st.session_state.initial_analysis = {"top_contributors": top_contributors}
-    
-    st.session_state.selected_employee = employee_data
-    st.toast(f"Funcionário {employee_id} carregado para análise!", icon="👤")
-=======
 # --- LÓGICA PRINCIPAL DO APP ---
-st.title("\U0001F4C8 Diagnóstico Tático de Turnover")
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
 
+st.title("💡 Ferramenta Tática de Análise de Turnover")
+
+# Carrega dados e modelos
 df_employees = load_employee_data()
 model, model_features, explainer = load_model_artifacts()
 
-if df_employees.empty or model is None:
-    st.warning("Dados dos funcionários ou modelo indisponíveis.")
+if df_employees.empty or not all([model, model_features, explainer]):
+    st.error("Aplicação não pode continuar. Verifique os dados e os artefatos do modelo.")
 else:
-<<<<<<< HEAD
-    actual_model = model_pipeline.named_steps['classifier'] if hasattr(model_pipeline, 'steps') else model_pipeline
-=======
-    X_all = prepare_data_for_model(df_employees, model_features)
-    probabilities = model.predict_proba(X_all)[:, 1]
-    df_employees['predicted_probability'] = probabilities
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
+    # Calcula as predições para todos os funcionários de uma vez
+    X_all = prepare_data_for_model(df_employees.copy(), model_features)
+    df_employees['predicted_probability'] = model.predict_proba(X_all)[:, 1]
 
-    tab_team, tab_individual = st.tabs(["\U0001F465 Risco da Equipe", "\U0001F464 Diagnóstico Individual"])
+    # Inicializa o estado da sessão
+    if 'selected_employee_id' not in st.session_state:
+        st.session_state.selected_employee_id = df_employees.iloc[0]['EmployeeNumber']
 
+    # Define as abas da interface
+    tab_team, tab_individual, tab_simulator = st.tabs([
+        "👥 Risco da Equipe", 
+        "👤 Diagnóstico Individual", 
+        "🧪 Simulador What-If"
+    ])
+
+    # --- ABA 1: Risco da Equipe ---
     with tab_team:
-        st.header("Risco de Saída por Departamento")
+        st.header("Visão Preditiva de Risco por Departamento")
         departments = sorted(df_employees['Department'].unique())
-        dept = st.selectbox("Departamento:", departments)
-        team = df_employees[df_employees['Department'] == dept]
-        team_sorted = team.sort_values(by='predicted_probability', ascending=False)
+        selected_dept = st.selectbox("Selecione um Departamento:", departments)
+
+        team_df = df_employees[df_employees['Department'] == selected_dept]
+        team_sorted = team_df.sort_values(by='predicted_probability', ascending=False)
+        
         emp_options = {f"{row['JobRole']} (ID: {row['EmployeeNumber']})": row['EmployeeNumber'] for _, row in team_sorted.iterrows()}
 
-<<<<<<< HEAD
-    with tab_simulador:
-        st.header("Simulador 'What-If' para Análise Individual")
-        emp_data = st.session_state.selected_employee
-        if emp_data:
-            employee_id = emp_data.get('EmployeeNumber', 0)
-            st.info(f"Analisando o Funcionário: **{employee_id}** | Cargo: **{emp_data.get('JobRole', 'N/A')}** | Risco Atual: **{emp_data.get('predicted_probability', 0):.1%}**")
-
-            if 'initial_analysis' in st.session_state:
-                st.subheader("Diagnóstico Inicial (Fatores de Risco)")
-                st.warning("Estes são os principais fatores que contribuem para o risco de saída ATUAL deste funcionário.", icon="🔥")
-                for feature, _ in st.session_state.initial_analysis['top_contributors']:
-                    st.markdown(f"- **{LABEL_MAPPING.get(feature, feature)}**")
-            
-            st.markdown("---")
-            st.subheader("Formulário de Simulação")
-            
-            input_data = {}
-            inner_tabs = st.tabs(list(FEATURE_GROUPS.keys()))
-            for i, group_name in enumerate(inner_tabs):
-                with group_name:
-                    input_data.update(generate_form_widgets(st.container(), FEATURE_GROUPS[list(FEATURE_GROUPS.keys())[i]], df_full, emp_data, employee_id))
-            
-            col1, col2, col3 = st.columns([2, 1.5, 2])
-            with col2:
-                if st.button("Simular Mudanças", type="primary", use_container_width=True):
-                    with st.spinner("Avaliando novo cenário..."):
-                        sim_df = pd.DataFrame([input_data])
-                        X_final_sim = prepare_data_for_model(sim_df, model_features)
-                        
-                        probability = actual_model.predict_proba(X_final_sim)[:, 1][0]
-                        
-                        threshold = 0.5
-                        try:
-                            threshold = joblib.load(project_root / "artifacts" / "models" / "threshold_optimizado.pkl")
-                        except:
-                            pass
-
-                        prediction = 1 if probability >= threshold else 0
-                        st.session_state.simulation_result = {"prediction": prediction, "probability": probability}
-            
-            if 'simulation_result' in st.session_state:
-                res = st.session_state.simulation_result
-                st.header("Resultado da Simulação")
-                st.metric("Novo Risco Simulado", f"{res['probability']:.1%}")
-                if res['prediction'] == 1: st.error("**Ainda em Alto Risco!**", icon="🚨")
-                else: st.success("**Risco Reduzido com Sucesso!**", icon="✅")
-        else:
-            st.warning("Nenhum funcionário selecionado.")
-=======
         if emp_options:
-            selected_emp_key = st.selectbox("Selecione um funcionário:", options=emp_options.keys())
-            emp_id = emp_options[selected_emp_key]
-            if st.button("Analisar Funcionário", use_container_width=True):
-                st.session_state.selected_employee = emp_id
-                st.toast("Funcionário carregado! Acesse a aba 'Diagnóstico Individual'.", icon="\U0001F464")
-        else:
-            st.warning("Nenhum funcionário encontrado.")
+            selected_emp_key = st.selectbox("Selecione um funcionário para análise:", options=emp_options.keys())
+            if st.button("Analisar Funcionário", use_container_width=True, type="primary"):
+                st.session_state.selected_employee_id = emp_options[selected_emp_key]
+                st.success(f"Funcionário {st.session_state.selected_employee_id} carregado! Veja as outras abas.")
         
         team_display = team_sorted.copy()
         team_display['risk_percent'] = team_display['predicted_probability'] * 100
-        st.dataframe(team_display[['EmployeeNumber', 'JobRole', 'risk_percent']], use_container_width=True, hide_index=True, column_config={ "EmployeeNumber": "ID", "JobRole": "Cargo", "risk_percent": st.column_config.ProgressColumn("Risco de Saída", format="%.1f%%", min_value=0, max_value=100) })
+        st.dataframe(
+            team_display[['EmployeeNumber', 'JobRole', 'risk_percent']], 
+            use_container_width=True, 
+            hide_index=True, 
+            column_config={
+                "EmployeeNumber": "ID", 
+                "JobRole": "Cargo", 
+                "risk_percent": st.column_config.ProgressColumn(
+                    "Risco de Saída", format="%.1f%%", min_value=0, max_value=100
+                )
+            }
+        )
 
+    # Puxa os dados do funcionário selecionado para as outras abas
+    employee_data = df_employees[df_employees['EmployeeNumber'] == st.session_state.selected_employee_id].iloc[0]
+
+    # --- ABA 2: Diagnóstico Individual ---
     with tab_individual:
-        st.header("Diagnóstico Individual")
-        if 'selected_employee' in st.session_state:
-            emp_row = df_employees[df_employees['EmployeeNumber'] == st.session_state.selected_employee]
-            if not emp_row.empty:
-                emp = emp_row.iloc[0]
-                st.subheader(f"Funcionário ID: {emp['EmployeeNumber']}")
-                st.write(f"Cargo: **{emp['JobRole']}**")
-                st.metric("Risco Atual de Saída", f"{emp['predicted_probability']:.1%}")
+        st.header(f"Diagnóstico para o Funcionário: {employee_data['EmployeeNumber']}")
+        st.metric("Risco Atual de Saída", f"{employee_data['predicted_probability']:.1%}")
 
-                X_emp = X_all[X_all.index == emp.name]
-                shap_vals = explainer.shap_values(X_emp)
-                top_factors = get_top_factors(shap_vals[0], X_emp.columns)
+        # Calcula e exibe os fatores de risco
+        X_emp = X_all[X_all.index == employee_data.name]
+        shap_values = explainer.shap_values(X_emp)[0]
+        top_factors = get_top_factors(shap_values, X_emp.columns)
 
-                actionable_factors = []
-                for feat, val in top_factors:
-                    base_feat = feat.split('_')[0]
-                    if base_feat not in UNACTIONABLE_FEATURES:
-                        actionable_factors.append((feat, val))
-                
-                st.subheader("Principais Fatores (Acionáveis) que Contribuem para o Risco")
-                if actionable_factors:
-                    for feat, val in actionable_factors[:3]:
-                        feat_label = translate_feature_name(feat, LABEL_MAPPING, VALUE_MAPPING)
-                        st.markdown(f"- **{feat_label}**")
-                else:
-                    st.info("Nenhum fator de risco acionável foi identificado para este funcionário.")
-            else:
-                st.warning("Funcionário não encontrado.")
+        actionable_factors = [
+            (feat, val) for feat, val in top_factors 
+            if feat.split('_')[0] not in UNACTIONABLE_FEATURES
+        ]
+        
+        st.subheader("Principais Fatores de Risco (Acionáveis)")
+        if actionable_factors:
+            for feat, val in actionable_factors:
+                st.markdown(f"- **{translate_feature_name(feat)}**")
         else:
-            st.info("Selecione um funcionário na aba 'Risco da Equipe' para visualizar o diagnóstico.")
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
+            st.info("Nenhum fator de risco acionável proeminente foi identificado.")
+
+    # --- ABA 3: Simulador What-If ---
+    with tab_simulator:
+        st.header("Simulador de Cenários")
+        st.info(f"Simulando para o funcionário **{employee_data['EmployeeNumber']}** com risco atual de **{employee_data['predicted_probability']:.1%}**")
+
+        with st.form(key="simulation_form"):
+            st.subheader("Altere os fatores abaixo para simular intervenções:")
+            
+            sim_input_data = {}
+            # Exemplo de como adicionar campos para simulação (adicione mais conforme necessário)
+            sim_input_data['MonthlyIncome'] = st.slider(
+                "Renda Mensal (R$)", 
+                min_value=int(df_employees['MonthlyIncome'].min()),
+                max_value=int(df_employees['MonthlyIncome'].max()),
+                value=int(employee_data['MonthlyIncome']),
+                step=100
+            )
+            sim_input_data['JobSatisfaction'] = st.select_slider(
+                "Satisfação no Trabalho",
+                options=[1, 2, 3, 4],
+                value=int(employee_data['JobSatisfaction'])
+            )
+
+            submit_button = st.form_submit_button(label="Simular Novo Risco")
+
+        if submit_button:
+            # Cria um DataFrame com os dados da simulação
+            sim_df = employee_data.to_frame().T.copy()
+            for key, value in sim_input_data.items():
+                sim_df[key] = value
+
+            # Prepara os dados e calcula o novo risco
+            X_sim = prepare_data_for_model(sim_df, model_features)
+            new_probability = model.predict_proba(X_sim)[0, 1]
+            
+            st.subheader("Resultado da Simulação")
+            col1, col2 = st.columns(2)
+            col1.metric("Risco Anterior", f"{employee_data['predicted_probability']:.1%}")
+            col2.metric("Novo Risco Simulado", f"{new_probability:.1%}", delta=f"{(new_probability - employee_data['predicted_probability']):.1%}")

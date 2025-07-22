@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # seed_database.py
 
 import os
@@ -51,7 +50,6 @@ def seed_database():
 
 if __name__ == "__main__":
     seed_database()
-=======
 import os
 import pandas as pd
 import sqlite3
@@ -103,4 +101,3 @@ def migrate_data():
 
 if __name__ == "__main__":
     migrate_data()
->>>>>>> aa5bb25655f252f82be0d23e27fbccceac13bf76
