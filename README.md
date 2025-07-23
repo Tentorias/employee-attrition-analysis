@@ -1,25 +1,25 @@
-🧠 **Análise de Attrition de Funcionários — Solução de BI & Machine Learning**
+# 🧠 **Análise de Attrition de Funcionários — Solução de BI & Machine Learning**
 Projeto de análise e predição de rotatividade de funcionários. A solução evolui de um pipeline de Machine Learning para uma arquitetura completa de Business Intelligence + ML, com camadas estratégicas (Power BI), táticas (Streamlit) e operacionais (API REST) para apoiar decisões no setor de RH.
 
 ---
 
-🏛️ **Arquitetura da Solução**
+## 🏛️ **Arquitetura da Solução**
 
 **Banco de Dados Central:**
 - PostgreSQL → Armazena dados dos funcionários, logs de predições da API e serve como fonte para as camadas tática e estratégica.
 
-**Camadas:**
+### **Camadas:**
 - **Estratégica (Power BI):** Dashboards e KPIs de turnover para alta gestão.
 - **Tática (Streamlit):** Dashboard de diagnóstico individual e ranking de risco para gestores e RH.
 - **Operacional (API REST):** Serviço automatizado de predição para outros sistemas, com deploy na nuvem.
 
 ---
 
-''''
-
 ------------------------------------
 📂 ESTRUTURA DO PROJETO
 ------------------------------------
+
+```
 .
 ├── 📁 .github/
 ├── 📁 .pytest_cache/
@@ -51,12 +51,11 @@ Projeto de análise e predição de rotatividade de funcionários. A solução e
 ├── 📄 pyproject.toml
 ├── 📄 README.md
 └── 📄 setup.cfg
+```
 
-'''''
+## ⚙️ **Stack Tecnológica**
 
-⚙️ **Stack Tecnológica**
-
-**Dados & BI**
+### **Dados & BI**
 - PostgreSQL, SQLAlchemy, Power BI
 
 **Modelagem & Core**
@@ -72,7 +71,7 @@ Projeto de análise e predição de rotatividade de funcionários. A solução e
 
 ---
 
-🚀 **Como Rodar o Projeto (Localmente)**
+## 🚀 **Como Rodar o Projeto (Localmente)**
 
 1. **Pré-requisitos:**
    - Python 3.10+
@@ -129,7 +128,7 @@ poetry run uvicorn api.main:app --reload
 
 ---
 
-🔗 **Pipeline de Machine Learning (À Prova de Data Leakage)**
+## 🔗 **Pipeline de Machine Learning (À Prova de Data Leakage)**
 
 - **Divisão de Dados Primeiro:** O dataset bruto é imediatamente dividido em conjuntos de treino e teste.
 - **Pré-processamento Separado:** Todas as etapas que "aprendem" com os dados (encoding de categorias, etc.) são treinadas apenas no conjunto de treino e depois aplicadas ao conjunto de teste.
@@ -139,7 +138,7 @@ poetry run uvicorn api.main:app --reload
 
 ---
 
-📊 **Resultados do Modelo (Otimizado para Recall)**
+## 📊 **Resultados do Modelo (Otimizado para Recall)**
 
 O modelo final foi calibrado para atender à necessidade de negócio de minimizar a perda de talentos, priorizando um alto Recall.
 
@@ -149,7 +148,7 @@ O modelo final foi calibrado para atender à necessidade de negócio de minimiza
 | Recall (Yes)       | 0.74 (74%)               |
 | F1-Score (Yes)     | 0.53 (53%)               |
 
-**Exportar para as Planilhas:**
+### **Exportar para as Planilhas:**
 
 - **Recall de 74%:** O modelo consegue identificar corretamente 3 em cada 4 funcionários que de fato sairiam. Essa é a métrica mais importante para a estratégia de retenção.
 - **Precision de 41%:** De cada 10 funcionários sinalizados como risco, aproximadamente 4 são casos de risco real, permitindo que a ação do RH seja focada e eficiente.
