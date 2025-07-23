@@ -1,14 +1,9 @@
-# src/attrition/models/tunning.py (Focado em RECALL)
-import argparse
+# src/attrition/models/tunning.py 
 import json
 import logging
 import os
-import joblib
 import optuna
-import pandas as pd
 import xgboost as xgb
-from imblearn.over_sampling import SMOTE
-from imblearn.pipeline import Pipeline as ImbPipeline
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -16,8 +11,8 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 def objective(trial, X, y):
     """Define a função objetivo para o Optuna otimizar o XGBoost com foco no recall."""
-    # O 'scale_pos_weight' é um parâmetro poderoso para datasets desbalanceados
-    # Ele informa ao modelo que a classe positiva (Attrition=1) é mais importante
+    
+
     count_neg, count_pos = y.value_counts()
     scale_pos_weight_value = count_neg / count_pos
 
@@ -26,7 +21,7 @@ def objective(trial, X, y):
         'eval_metric': 'logloss',
         'random_state': 42,
         'n_jobs': -1,
-        'scale_pos_weight': scale_pos_weight_value, # <--- Parâmetro chave para recall
+        'scale_pos_weight': scale_pos_weight_value, 
         'n_estimators': trial.suggest_int('n_estimators', 200, 2000),
         'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),
         'max_depth': trial.suggest_int('max_depth', 3, 12),
@@ -36,11 +31,11 @@ def objective(trial, X, y):
     }
     model = xgb.XGBClassifier(**params)
     
-    # Não usaremos SMOTE aqui, pois o 'scale_pos_weight' já lida com o desbalanceamento
+   
     pipeline = model 
     
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    # <<< MUDANÇA PRINCIPAL: Otimizando para 'recall' >>>
+    
     score = cross_val_score(pipeline, X, y, cv=cv, scoring='recall', n_jobs=-1).mean()
     return score
 
@@ -60,4 +55,3 @@ def run_tuning(X_train, y_train, n_trials: int, output_path: str):
         json.dump(best_params, f)
     logging.info(f"✅ Melhores parâmetros salvos em: {output_path}")
 
-# (O código para execução via CLI pode ser adicionado aqui se necessário)

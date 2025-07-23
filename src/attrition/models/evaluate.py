@@ -1,17 +1,16 @@
-# src/attrition/models/evaluate.py (COM THRESHOLD CUSTOMIZADO)
+# src/attrition/models/evaluate.py 
 import argparse
 import logging
 import sys
 import joblib
 import pandas as pd
 import numpy as np
-# <<< Adicionado precision_score >>>
 from sklearn.metrics import classification_report, confusion_matrix, precision_score
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# <<< Função modificada para buscar um alvo de precisão >>>
+
 def find_threshold_for_target_precision(model, X_val, y_val, target_precision=0.40):
     """
     Encontra o threshold que resulta em uma precisão mais próxima do alvo.
@@ -22,19 +21,19 @@ def find_threshold_for_target_precision(model, X_val, y_val, target_precision=0.
     best_threshold = 0.5
     min_precision_diff = float('inf')
 
-    # Testa thresholds de 0.05 a 0.95
+   
     for threshold in np.arange(0.05, 0.95, 0.01):
         y_pred = (y_pred_proba >= threshold).astype(int)
-        # Calcula a precisão para a classe positiva (1)
+      
         current_precision = precision_score(y_val, y_pred, pos_label=1, zero_division=0)
         
-        # Verifica qual threshold chega mais perto do nosso alvo
+        
         precision_diff = abs(current_precision - target_precision)
         if precision_diff < min_precision_diff:
             min_precision_diff = precision_diff
             best_threshold = threshold
             
-    # Recalcula as métricas finais com o melhor threshold encontrado
+
     y_pred_final = (y_pred_proba >= best_threshold).astype(int)
     final_precision = precision_score(y_val, y_pred_final, pos_label=1)
     final_recall = precision_score(y_val, y_pred_final, pos_label=1)
@@ -63,10 +62,10 @@ def main(model_path: str, x_test_path: str, y_test_path: str):
         X_test = pd.read_csv(x_test_path)
         y_test = pd.read_csv(y_test_path).squeeze("columns")
         
-        # 1. Encontra o threshold ótimo para o alvo de 40% de precisão
+ 
         optimal_threshold = find_threshold_for_target_precision(model, X_test, y_test, target_precision=0.40)
         
-        # 2. Avalia o modelo com o threshold ótimo
+
         evaluate_with_threshold(model, X_test, y_test, optimal_threshold)
         
         logger.info("Avaliação concluída com sucesso.")

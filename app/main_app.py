@@ -1,7 +1,6 @@
 import sys
 import os
 from pathlib import Path
-
 import joblib
 import pandas as pd
 import streamlit as st
@@ -16,11 +15,11 @@ st.set_page_config(
 )
 load_dotenv()
 
-# Adiciona o caminho raiz do projeto para permitir importações locais
+
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-# Tenta importar configurações de UI, com fallback gracioso
+
 try:
     from app.ui_config import LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES
 except ImportError:
@@ -103,22 +102,22 @@ def translate_feature_name(feature_name):
 
 st.title("💡 Ferramenta Tática de Análise de Turnover")
 
-# Carrega dados e modelos
+
 df_employees = load_employee_data()
 model, model_features, explainer = load_model_artifacts()
 
 if df_employees.empty or not all([model, model_features, explainer]):
     st.error("Aplicação não pode continuar. Verifique os dados e os artefatos do modelo.")
 else:
-    # Calcula as predições para todos os funcionários de uma vez
+   
     X_all = prepare_data_for_model(df_employees.copy(), model_features)
     df_employees['predicted_probability'] = model.predict_proba(X_all)[:, 1]
 
-    # Inicializa o estado da sessão
+    
     if 'selected_employee_id' not in st.session_state:
         st.session_state.selected_employee_id = df_employees.iloc[0]['EmployeeNumber']
 
-    # Define as abas da interface
+    
     tab_team, tab_individual = st.tabs([
         "👥 Análise de Risco da Equipe", 
         "👤 Diagnóstico Individual", 
@@ -156,7 +155,7 @@ else:
             }
         )
 
-    # Puxa os dados do funcionário selecionado para a próxima aba
+
     employee_data = df_employees[df_employees['EmployeeNumber'] == st.session_state.selected_employee_id].iloc[0]
 
     # --- ABA 2: Diagnóstico Individual ---

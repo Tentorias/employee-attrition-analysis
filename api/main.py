@@ -28,7 +28,6 @@ try:
     model = joblib.load(MODEL_PATH)
     explainer = joblib.load(EXPLAINER_PATH)
     model_features = joblib.load(FEATURES_PATH)
-    # --- Conexão com o Banco de Dados ---
     engine = create_engine(DATABASE_URL) if DATABASE_URL else None
     print(f"✅ Modelo, explicador e lista de features carregados.")
     if engine:
@@ -61,7 +60,7 @@ async def predict(employee_data: EmployeeData):
         
         actual_model = model.named_steps['classifier'] if hasattr(model, 'steps') else model
         probability_yes = actual_model.predict_proba(final_df)[0, 1]
-        prediction = "Yes" if probability_yes >= 0.5 else "No" # O threshold da API pode ser simples
+        prediction = "Yes" if probability_yes >= 0.5 else "No" 
 
         shap_values = explainer.shap_values(final_df)
         explanation_raw = dict(zip(final_df.columns, shap_values[0]))

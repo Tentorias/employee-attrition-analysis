@@ -1,20 +1,19 @@
-# src/attrition/models/train.py (Integrado com Optuna)
+# src/attrition/models/train.py
 import argparse
 import logging
 import os
 import joblib
 import pandas as pd
 import numpy as np
-import json # <<< Adicionado
+import json 
 from imblearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-# <<< Adicionado para chamar o tunning.py >>>
 from . import tunning
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-# ... (funções ensure_dir e preprocess permanecem as mesmas) ...
+
 def ensure_dir(file_path):
     directory = os.path.dirname(file_path)
     if directory and not os.path.exists(directory):
@@ -36,7 +35,7 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
         df_proc = pd.get_dummies(df_proc, columns=cat_cols, drop_first=True, dtype=float)
     return df_proc
 
-# <<< Função main totalmente refatorada >>>
+
 def main(raw_data_path, model_path, features_path, params_path, x_test_out, y_test_out, retrain_full_data=False, run_optuna_tuning=False):
     """Pipeline completo: carrega, divide, processa, otimiza (opcional) e treina."""
     logging.info(f"Carregando dados brutos de {raw_data_path}")
@@ -52,11 +51,10 @@ def main(raw_data_path, model_path, features_path, params_path, x_test_out, y_te
     logging.info("Aplicando pré-processamento...")
     X_train_processed = preprocess(X_train)
     
-    # Otimização com Optuna (se ativada)
+    #
     if run_optuna_tuning:
-        tunning.run_tuning(X_train=X_train_processed, y_train=y_train, n_trials=50, output_path=params_path) # 50 tentativas para ser mais rápido
-
-    # Carrega os melhores parâmetros ou usa os padrões
+        tunning.run_tuning(X_train=X_train_processed, y_train=y_train, n_trials=100, output_path=params_path) 
+    
     try:
         with open(params_path, 'r') as f:
             best_params = json.load(f)
@@ -65,13 +63,13 @@ def main(raw_data_path, model_path, features_path, params_path, x_test_out, y_te
         logging.warning("Arquivo de parâmetros não encontrado. Usando XGBoost padrão.")
         best_params = {}
 
-    # Define o classificador com os melhores parâmetros
+
     classifier = XGBClassifier(random_state=42, n_jobs=-1, **best_params)
     
-    # Define o pipeline final (sem SMOTE, pois o tunning já ajusta para o desbalanceamento)
+    
     model = classifier
 
-    # Decide se retreina com todos os dados para produção
+    
     if retrain_full_data:
         logging.info("Modo de produção: processando e treinando com todos os dados...")
         X_processed = preprocess(X)
@@ -80,7 +78,7 @@ def main(raw_data_path, model_path, features_path, params_path, x_test_out, y_te
         logging.info("Modo de avaliação: treinando com dados de treino...")
         model.fit(X_train_processed, y_train)
 
-    # Salva os artefatos
+    
     train_cols = X_train_processed.columns.tolist()
     logging.info(f"Salvando lista de {len(train_cols)} features em {features_path}")
     ensure_dir(features_path)

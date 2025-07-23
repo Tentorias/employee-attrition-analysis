@@ -16,7 +16,7 @@ def main():
     if args.command == "run-pipeline":
         logging.info("--- 🚀 EXECUTANDO O PIPELINE COMPLETO 🚀 ---")
         
-        # Define os caminhos dos artefatos
+        
         raw_data_path = "data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv"
         model_path = "artifacts/models/model.pkl"
         features_path = "artifacts/features/features.pkl"
@@ -25,7 +25,7 @@ def main():
         y_test_path = "artifacts/features/y_test.csv"
         prod_model_path = "models/production_model.pkl"
 
-        # ETAPA 1: Treinar o modelo de avaliação (com tuning opcional)
+        
         logging.info("\n[ETAPA 1/3] Processando dados e treinando modelo de avaliação...")
         train.main(
             raw_data_path=raw_data_path,
@@ -38,7 +38,7 @@ def main():
             run_optuna_tuning=args.tune
         )
 
-        # ETAPA 2: Avaliar o modelo
+        
         logging.info("\n[ETAPA 2/3] Avaliando o modelo treinado...")
         evaluate.main(
             model_path=model_path,
@@ -46,7 +46,7 @@ def main():
             y_test_path=y_test_path
         )
 
-        # ETAPA 3: Retreinar com todos os dados para produção
+        
         logging.info("\n[ETAPA 3/3] Retreinando o modelo com todos os dados para produção...")
         train.main(
             raw_data_path=raw_data_path,
@@ -56,7 +56,7 @@ def main():
             x_test_out=None,
             y_test_out=None,
             retrain_full_data=True,
-            run_optuna_tuning=False # Não precisa re-otimizar para o treino final
+            run_optuna_tuning=False 
         )
         
         logging.info("\n--- ✅ PIPELINE COMPLETO EXECUTADO COM SUCESSO! ---")
