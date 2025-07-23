@@ -15,6 +15,45 @@ Projeto de análise e predição de rotatividade de funcionários. A solução e
 
 ---
 
+''''
+
+------------------------------------
+📂 ESTRUTURA DO PROJETO
+------------------------------------
+.
+├── 📁 .github/
+├── 📁 .pytest_cache/
+├── 📁 .venv/
+├── 📁 api/
+├── 📁 app/
+├── 📁 artifacts/
+├── 📁 attrition.egg-info/
+├── 📁 data/
+├── 📁 database/
+├── 📁 htmlcov/
+├── 📁 models/
+├── 📁 notebooks/
+├── 📁 reports/
+├── 📁 scripts/
+├── 📁 sql/
+├── 📁 src/
+├── 📁 tests/
+├── 📄 .coverage
+├── 📄 .dockerignore
+├── 📄 .env
+├── 📄 .env.example
+├── 📄 .gitignore
+├── 📄 .pre-commit-config.yaml
+├── 📄 Dockerfile
+├── 📄 LICENSE
+├── 📄 Makefile
+├── 📄 poetry.lock
+├── 📄 pyproject.toml
+├── 📄 README.md
+└── 📄 setup.cfg
+
+'''''
+
 ⚙️ **Stack Tecnológica**
 
 **Dados & BI**
