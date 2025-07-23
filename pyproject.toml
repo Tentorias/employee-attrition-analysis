@@ -30,6 +30,8 @@ python-multipart = "^0.0.9"
 
 
 # Esta seção lista as dependências de desenvolvimento
+matplotlib = "^3.10.3"
+seaborn = "^0.13.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 pre-commit = "^3.7.1"
