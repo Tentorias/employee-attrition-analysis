@@ -5,7 +5,7 @@ version = "0.1.0"
 description = "Projeto de análise e predição de rotatividade de funcionários com BI e Machine Learning."
 authors = ["tentorias <100281291+Tentorias@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{include = "src"}]
+packages = [{include = "attrition", from = "src"}]
 
 # Esta seção lista todas as dependências do projeto
 [tool.poetry.dependencies]
@@ -29,7 +29,7 @@ lightgbm = "^4.6.0"
 python-multipart = "^0.0.9"
 
 
-# Esta seção lista as dependências de desenvolvimento
+# lista as dependências de desenvolvimento
 matplotlib = "^3.10.3"
 seaborn = "^0.13.2"
 [tool.poetry.group.dev.dependencies]
@@ -39,7 +39,7 @@ black = "^24.4.2"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
 
-# Seção de configuração do build
+# configuração do build
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
