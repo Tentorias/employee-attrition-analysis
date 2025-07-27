@@ -2,11 +2,9 @@
 
 import argparse
 import json
-
 import joblib
 import numpy as np
 import pandas as pd
-
 
 def main(model_path: str, threshold_path: str, features_path: str, input_data: dict):
     """
@@ -15,31 +13,43 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
     """
     try:
         model = joblib.load(model_path)
+        # Carregar o threshold salvo pelo evaluate.py
         threshold = joblib.load(threshold_path)
         feature_names = joblib.load(features_path)
 
         X_new = pd.DataFrame([input_data])
 
-        if (
-            "TotalWorkingYears" in X_new.columns
-            and "NumCompaniesWorked" in X_new.columns
-        ):
-            denominator = (
-                X_new["NumCompaniesWorked"].iloc[0]
-                if X_new["NumCompaniesWorked"].iloc[0] > 0
-                else 1
-            )
-            X_new["YearsPerCompany"] = X_new["TotalWorkingYears"].iloc[0] / denominator
-        if "MonthlyIncome" in X_new.columns:
-            X_new["MonthlyIncome_log"] = np.log1p(X_new["MonthlyIncome"])
-        if "TotalWorkingYears" in X_new.columns:
-            X_new["TotalWorkingYears_log"] = np.log1p(X_new["TotalWorkingYears"])
+        # As transformações aqui precisam ser as mesmas de data_processing.py e train.py!
+        # Isso é um ponto crítico de consistência.
+        # Idealmente, você chamaria uma função de pré-processamento unificada.
+        # Por enquanto, garanta que estas etapas abaixo são idênticas ao preprocess() em train.py
+        # e ao que load_and_preprocess_data faz para df_model.
 
-        X_new_encoded = pd.get_dummies(X_new, drop_first=True, dtype=float)
+        cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
+        X_new.drop(columns=[col for col in cols_to_drop if col in X_new.columns], errors='ignore', inplace=True)
+        
+        if 'TotalWorkingYears' in X_new.columns and 'NumCompaniesWorked' in X_new.columns:
+            # Note: A API usa `+1` no denominador, train.py usa `.replace(0,1)`. Precisa ser consistente!
+            # Mantenha o que está no train.py/data_processing.py
+            X_new['YearsPerCompany'] = X_new['TotalWorkingYears'] / X_new['NumCompaniesWorked'].replace(0, 1) 
+        
+        if 'MonthlyIncome' in X_new.columns:
+            X_new['MonthlyIncome_log'] = np.log1p(X_new['MonthlyIncome'])
+        
+        if 'TotalWorkingYears' in X_new.columns:
+            X_new['TotalWorkingYears_log'] = np.log1p(X_new['TotalWorkingYears'])
 
-        X_new_aligned = X_new_encoded.reindex(columns=feature_names, fill_value=0)
+        cat_cols = X_new.select_dtypes(include=["object"]).columns.tolist()
+        if cat_cols:
+            X_new = pd.get_dummies(X_new, columns=cat_cols, drop_first=True, dtype=float)
 
+
+        # Reindexa para garantir que as colunas e ordem correspondam às do treinamento
+        X_new_aligned = X_new.reindex(columns=feature_names, fill_value=0)
+
+        # Prever probabilidade
         probability = model.predict_proba(X_new_aligned)[:, 1][0]
+        # Aplicar o threshold carregado
         prediction = int((probability >= threshold).astype(int))
 
         return prediction, probability
@@ -54,9 +64,9 @@ def cli_main():
     parser = argparse.ArgumentParser(
         description="Faz a predição a partir de um arquivo JSON."
     )
-    parser.add_argument("--model-path", required=True)
-    parser.add_argument("--threshold-path", required=True)
-    parser.add_argument("--features-path", required=True)
+    parser.add_argument("--model-path", default="models/production_model.pkl", help="Caminho para o modelo treinado.")
+    parser.add_argument("--threshold-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para o threshold salvo.")
+    parser.add_argument("--features-path", default="artifacts/features/features.pkl", help="Caminho para o arquivo de features.")
     parser.add_argument(
         "--input-file",
         required=True,

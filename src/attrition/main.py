@@ -1,7 +1,9 @@
-# src/attrition/main.py (VERSÃO CORRIGIDA E TESTÁVEL)
+# src/attrition/main.py
+
 import argparse
 import logging
 import os
+import joblib 
 from attrition.models import train, evaluate
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -18,6 +20,7 @@ def main():
 
     # --- Comando run-pipeline ---
     p = subparsers.add_parser("run-pipeline", help="Executa o pipeline completo.")
+    # AJUSTE AQUI: Mude o caminho para 'data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv'
     p.add_argument("--raw-data-path", default="data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv", help="Caminho dos dados brutos.")
     p.add_argument("--model-path", default="artifacts/models/model.pkl", help="Caminho para salvar modelo de avaliação.")
     p.add_argument("--features-path", default="artifacts/features/features.pkl", help="Caminho para salvar lista de features.")
@@ -26,19 +29,20 @@ def main():
     p.add_argument("--y-test-path", default="artifacts/features/y_test.csv", help="Caminho para salvar y_test.")
     p.add_argument("--prod-model-path", default="models/production_model.pkl", help="Caminho para salvar modelo de produção.")
     p.add_argument("--tune", action="store_true", help="Ativa a otimização com Optuna.")
+    p.add_argument("--threshold-output-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para salvar o threshold ótimo.") 
 
     args = parser.parse_args()
 
     if args.command == "run-pipeline":
         logging.info("--- 🚀 EXECUTANDO O PIPELINE COMPLETO 🚀 ---")
 
-        # Garante que os diretórios de saída existam
         ensure_dir(args.model_path)
         ensure_dir(args.features_path)
         ensure_dir(args.params_path)
         ensure_dir(args.x_test_path)
         ensure_dir(args.y_test_path)
         ensure_dir(args.prod_model_path)
+        ensure_dir(args.threshold_output_path) 
 
         logging.info("\n[ETAPA 1/3] Processando dados e treinando modelo de avaliação...")
         train.main(
@@ -50,7 +54,9 @@ def main():
 
         logging.info("\n[ETAPA 2/3] Avaliando o modelo treinado...")
         evaluate.main(
-            model_path=args.model_path, x_test_path=args.x_test_path, y_test_path=args.y_test_path
+            model_path=args.model_path, x_test_path=args.x_test_path, 
+            y_test_path=args.y_test_path, 
+            threshold_output_path=args.threshold_output_path 
         )
 
         logging.info("\n[ETAPA 3/3] Retreinando o modelo com todos os dados para produção...")
