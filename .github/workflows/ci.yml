@@ -27,17 +27,17 @@ jobs:
         run: |
           pip install poetry
 
-      # --- AJUSTE AQUI: Mude de uses: actions/cache@v2 para @v3 ou @v4 ---
       - name: Configurar cache de dependências Poetry
-        uses: actions/cache@v4 # Mude para v4 (ou v3 se preferir, mas v4 é mais recente)
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
+      # --- AJUSTE AQUI: Mude '--no-dev' para '--without dev' ---
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root --no-dev
+          poetry install --no-root --without dev # Corrigido para a sintaxe do Poetry 2.x
 
       - name: Executar lint (flake8)
         run: |
