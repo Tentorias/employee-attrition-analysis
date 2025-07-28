@@ -1,8 +1,9 @@
 # scripts/clean_predictions.py
 import os
-import pandas as pd
-from sqlalchemy import create_engine, text
+
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+
 
 def clean_duplicate_predictions():
     """
@@ -18,10 +19,11 @@ def clean_duplicate_predictions():
 
     try:
         engine = create_engine(db_url)
-        
+
         # Query SQL para deletar duplicatas, mantendo a mais recente
         # A sintaxe pode variar um pouco dependendo do SQL (PostgreSQL aqui)
-        query = text("""
+        query = text(
+            """
         DELETE FROM predictions
         WHERE ctid IN (
             SELECT ctid
@@ -36,15 +38,19 @@ def clean_duplicate_predictions():
             ) t
             WHERE t.rn > 1
         );
-        """)
+        """
+        )
 
         with engine.connect() as conn:
             result = conn.execute(query)
-            conn.commit() # Efetiva a transação
-            print(f"✅ Limpeza concluída. {result.rowcount} registros duplicados foram removidos.")
+            conn.commit()
+            print(
+                f"✅ Limpeza concluída. {result.rowcount} registros duplicados foram removidos."
+            )
 
     except Exception as e:
         print(f"❌ Erro durante a limpeza: {e}")
+
 
 if __name__ == "__main__":
     clean_duplicate_predictions()

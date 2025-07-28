@@ -1,19 +1,22 @@
-#src/attrition/causal_analysis.py
+# src/attrition/causal_analysis.py
 
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, Column, String, Float, Date, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import date
 import os
+from datetime import date
+
 from dotenv import load_dotenv
+from sqlalchemy import Column, Date, Float, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
 Base = declarative_base()
+
+
 class CausalInsight(Base):
-    __tablename__ = 'causal_insights'
+    __tablename__ = "causal_insights"
     id = Column(Integer, primary_key=True)
-    factor_causal = Column(String, unique=True, nullable=False) 
+    factor_causal = Column(String, unique=True, nullable=False)
     efeito_causal = Column(Float, nullable=False)
     unidade_efeito = Column(String, nullable=False)
     data_analise = Column(Date, nullable=False, default=date.today)
@@ -21,6 +24,7 @@ class CausalInsight(Base):
 
     def __repr__(self):
         return f"<CausalInsight(factor_causal='{self.factor_causal}', efeito_causal={self.efeito_causal})>"
+
 
 def save_causal_insight(factor: str, effect: float, unit: str, observation: str):
     """Salva ou atualiza um insight causal no banco de dados."""
@@ -30,7 +34,7 @@ def save_causal_insight(factor: str, effect: float, unit: str, observation: str)
         return
 
     engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine) 
+    Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -39,12 +43,12 @@ def save_causal_insight(factor: str, effect: float, unit: str, observation: str)
         insight = session.query(CausalInsight).filter_by(factor_causal=factor).first()
         if not insight:
             insight = CausalInsight(factor_causal=factor)
-        
+
         insight.efeito_causal = effect
         insight.unidade_efeito = unit
         insight.data_analise = date.today()
         insight.observacoes = observation
-        
+
         session.add(insight)
         session.commit()
         print(f"Insight para '{factor}' salvo/atualizado no BD com efeito: {effect}")

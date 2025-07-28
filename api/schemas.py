@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel
 
+
 class EmployeeData(BaseModel):
     Age: int
     BusinessTravel: str
@@ -37,6 +38,7 @@ class EmployeeData(BaseModel):
     YearsInCurrentRole: int
     YearsSinceLastPromotion: int
     YearsWithCurrManager: int
+
 
 class PredictionOut(BaseModel):
     prediction: str

@@ -1,110 +1,108 @@
-# api/main.py
+# src/attrition/models/predict.py
 
-import os
+import argparse
+import json
+import os  # Importar os
+
 import joblib
+import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
-import numpy as np 
-
-from .schemas import EmployeeData, PredictionOut  # type: ignore
-
-# --- Carregar variáveis de ambiente ---
-load_dotenv()
-
-app = FastAPI(
-    title="API de Predição de Attrition de Funcionários",
-    description="API para prever a probabilidade de um funcionário deixar a empresa e logar o resultado.",
-    version="1.0.1" 
-)
-
-# --- Carregamento dos Artefactos ---
-MODEL_PATH = os.path.join("models", "production_model.pkl")
-FEATURES_PATH = os.path.join("artifacts", "features", "features.pkl")
-EXPLAINER_PATH = os.path.join("models", "production_shap_explainer.pkl")
-THRESHOLD_PATH = os.path.join("artifacts", "models", "optimal_threshold.pkl") 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-try:
-    model = joblib.load(MODEL_PATH)
-    explainer = joblib.load(EXPLAINER_PATH)
-    model_features = joblib.load(FEATURES_PATH)
-    optimal_threshold = joblib.load(THRESHOLD_PATH) 
-    engine = create_engine(DATABASE_URL) if DATABASE_URL else None
-    print(f"✅ Modelo, explicador, lista de features e threshold carregados.")
-    if engine:
-        print("✅ Conexão com o banco de dados estabelecida.")
-    else:
-        print("⚠️ Aviso: DATABASE_URL não encontrada. O logging de predições está desativado.")
-
-except FileNotFoundError as e:
-    print(f"❌ Erro crítico ao carregar artefactos: {e}.")
-    raise
-except Exception as e:
-    print(f"❌ Erro inesperado ao carregar artefactos: {e}.") 
-    raise
 
 
-@app.get("/health", summary="Verifica a saúde da API")
-async def health_check():
-    return {"status": "ok"}
-
-@app.post("/predict", response_model=PredictionOut, summary="Realiza a predição de attrition")
-async def predict(employee_data: EmployeeData):
+def main(model_path: str, threshold_path: str, features_path: str, input_data: dict):
+    """
+    Recebe um dicionário com dados brutos, faz todo o pré-processamento,
+    carrega o modelo e retorna a predição.
+    """
     try:
-        input_df = pd.DataFrame([employee_data.dict()])
+        model = joblib.load(model_path)
+        threshold = joblib.load(threshold_path)
+        feature_names = joblib.load(features_path)
 
+        X_new = pd.DataFrame([input_data])
 
-        cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
-        input_df.drop(columns=[col for col in cols_to_drop if col in input_df.columns], errors='ignore', inplace=True)
-        
-        if 'Gender' in input_df.columns:
-            input_df['Gender'] = input_df['Gender'].map({"Male": 1, "Female": 0})
-        
-        if 'NumCompaniesWorked' in input_df.columns and 'TotalWorkingYears' in input_df.columns:
-            input_df['YearsPerCompany'] = input_df['TotalWorkingYears'] / input_df['NumCompaniesWorked'].replace(0, 1) 
+        # As transformações aqui precisam ser as mesmas de data_processing.py e train.py!
+        cols_to_drop = ["EmployeeCount", "StandardHours", "Over18"]
+        X_new.drop(
+            columns=[col for col in cols_to_drop if col in X_new.columns],
+            errors="ignore",
+            inplace=True,
+        )
 
-        if 'MonthlyIncome' in input_df.columns:
-            input_df['MonthlyIncome_log'] = np.log1p(input_df['MonthlyIncome'])
-        
-        if 'TotalWorkingYears' in input_df.columns:
-            input_df['TotalWorkingYears_log'] = np.log1p(input_df['TotalWorkingYears'])
+        if (
+            "TotalWorkingYears" in X_new.columns
+            and "NumCompaniesWorked" in X_new.columns
+        ):
+            X_new["YearsPerCompany"] = X_new["TotalWorkingYears"] / X_new[
+                "NumCompaniesWorked"
+            ].replace(
+                0, 1
+            )  # Usar .replace(0,1)
+        if "MonthlyIncome" in X_new.columns:
+            X_new["MonthlyIncome_log"] = np.log1p(X_new["MonthlyIncome"])
+        if "TotalWorkingYears" in X_new.columns:
+            X_new["TotalWorkingYears_log"] = np.log1p(X_new["TotalWorkingYears"])
 
-        categorical_cols = input_df.select_dtypes(include=["object"]).columns.tolist()
-        if categorical_cols:
-            input_df = pd.get_dummies(input_df, columns=categorical_cols, drop_first=True, dtype=float)
+        X_new_encoded = pd.get_dummies(X_new, drop_first=True, dtype=float)
 
-        final_df = input_df.reindex(columns=model_features, fill_value=0.0) 
-        
-        actual_model = model.named_steps['classifier'] if hasattr(model, 'steps') else model
-        probability_yes = actual_model.predict_proba(final_df)[:, 1][0]
-        
-        prediction = "Yes" if probability_yes >= optimal_threshold else "No" 
+        X_new_aligned = X_new_encoded.reindex(columns=feature_names, fill_value=0.0)
 
-        shap_values = explainer.shap_values(final_df)
-        explanation_raw = dict(zip(final_df.columns, shap_values[0]))
-        explanation = {k: float(v) for k, v in explanation_raw.items()}
-        explanation = dict(sorted(explanation.items(), key=lambda item: abs(item[1]), reverse=True))
+        probability = model.predict_proba(X_new_aligned)[:, 1][0]
+        prediction = int((probability >= threshold).astype(int))
 
-        # --- LÓGICA DE LOGGING NO BANCO DE DADOS ---
-        if engine:
-            try:
-                log_df = pd.DataFrame({
-                    'EmployeeNumber': [employee_data.EmployeeNumber],
-                    'predicted_probability': [probability_yes],
-                    'prediction_timestamp': [pd.Timestamp.now()],
-                    'prediction_label': [prediction] 
-                })
+        return prediction, probability
 
-                log_df.to_sql('predictions', con=engine, if_exists='append', index=False)
-            except Exception as db_error:
-                print(f"⚠️ Erro ao salvar predição no banco de dados: {db_error}")
-
-        return {
-            "prediction": prediction,
-            "probability_yes": float(probability_yes),
-            "explanation": explanation
-        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno ao processar a predição: {str(e)}")
+        # F541: Corrigir a f-string para ter a variável `e` dentro das chaves {}
+        print(f"Ocorreu um erro na predição: {e}")
+        return None, None
+
+
+def cli_main():
+    """Função para executar o script via linha de comando."""
+    parser = argparse.ArgumentParser(
+        description="Faz a predição a partir de um arquivo JSON."
+    )
+    # Default paths for cli_main
+    parser.add_argument(
+        "--model-path",
+        default=os.path.join("models", "production_model.pkl"),
+        help="Caminho para o modelo treinado.",
+    )
+    parser.add_argument(
+        "--threshold-path",
+        default=os.path.join("artifacts", "models", "optimal_threshold.pkl"),
+        help="Caminho para o threshold salvo.",
+    )
+    parser.add_argument(
+        "--features-path",
+        default=os.path.join("artifacts", "features", "features.pkl"),
+        help="Caminho para o arquivo de features.",
+    )
+    parser.add_argument(
+        "--input-file",
+        required=True,
+        help="Caminho para o arquivo JSON com os dados do funcionário.",
+    )
+    args = parser.parse_args()
+
+    with open(args.input_file, "r") as f:
+        input_data = json.load(f)
+
+    prediction, probability = main(
+        model_path=args.model_path,
+        threshold_path=args.threshold_path,
+        features_path=args.features_path,
+        input_data=input_data,
+    )
+    if prediction is not None:
+        print("\n--- Resultado da Predição ---")
+        print(f"Probabilidade de Saída (Attrition): {probability:.4f}")
+        print(
+            f"Decisão Final: {'Funcionário Sai' if prediction == 1 else 'Funcionário Fica'}"
+        )
+        print("-----------------------------")
+
+
+if __name__ == "__main__":
+    cli_main()

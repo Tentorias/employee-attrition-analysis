@@ -1,14 +1,11 @@
-import pandas as pd
 import pickle
-import matplotlib.pyplot as plt
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    classification_report,
-    roc_curve,
-    auc,
-    precision_recall_fscore_support
-)
+from sklearn.metrics import (auc, classification_report,
+                             precision_recall_fscore_support, roc_curve)
 
 # --- Configuração de Caminhos ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,7 +13,8 @@ X_TEST_PATH = BASE_DIR / "artifacts" / "features" / "X_test.csv"
 Y_TEST_PATH = BASE_DIR / "artifacts" / "features" / "y_test.csv"
 MODEL_PATH = BASE_DIR / "models" / "production_model.pkl"
 REPORTS_DIR = BASE_DIR / "reports"
-REPORTS_DIR.mkdir(exist_ok=True) 
+REPORTS_DIR.mkdir(exist_ok=True)
+
 
 def evaluate_model_deeply():
     """
@@ -27,13 +25,16 @@ def evaluate_model_deeply():
 
     # --- 1. Carregar Dados e Modelo ---
     if not all([X_TEST_PATH.exists(), Y_TEST_PATH.exists(), MODEL_PATH.exists()]):
-        print("❌ ERRO: Arquivos de teste ou modelo não encontrados. Execute o pipeline de treino primeiro.")
+        print(
+            "❌ ERRO: Arquivos de teste ou modelo não encontrados. "
+            "Execute o pipeline de treino primeiro."
+        )
         return
 
     X_test = pd.read_csv(X_TEST_PATH)
-    y_test = pd.read_csv(Y_TEST_PATH).squeeze() 
+    y_test = pd.read_csv(Y_TEST_PATH).squeeze()
 
-    with open(MODEL_PATH, 'rb') as f:
+    with open(MODEL_PATH, "rb") as f:
         model_prod = pickle.load(f)
 
     print("✔ Dados de teste e modelo de produção carregados.")
@@ -44,10 +45,12 @@ def evaluate_model_deeply():
     y_proba_prod = model_prod.predict_proba(X_test)[:, 1]
 
     print("📄 Relatório de Classificação (XGBoost):")
-    print(classification_report(y_test, y_pred_prod, target_names=['No', 'Yes']))
+    print(classification_report(y_test, y_pred_prod, target_names=["No", "Yes"]))
 
-    precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred_prod, average='binary', pos_label=1)
-    print(f"Métricas para a classe 'Yes' (Turnover):")
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_test, y_pred_prod, average="binary", pos_label=1
+    )
+    print("Métricas para a classe 'Yes' (Turnover):")
     print(f"  - Precisão: {precision:.2f}")
     print(f"  - Recall (Revocação): {recall:.2f}")
     print(f"  - F1-Score: {f1:.2f}")
@@ -56,16 +59,22 @@ def evaluate_model_deeply():
     print("\n📊 Gerando Curva ROC e calculando AUC...")
     fpr, tpr, _ = roc_curve(y_test, y_proba_prod, pos_label=1)
     roc_auc = auc(fpr, tpr)
-    print(f"  - AUC (Area Under Curve): {roc_auc:.2f}")
+    print(f"  - AUC (Area Under Curve): {roc_auc:.2f}")  # F541 corrigido
 
     plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'Curva ROC (área = {roc_auc:.2f})')
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.plot(
+        fpr,
+        tpr,
+        color="darkorange",
+        lw=2,
+        label=f"Curva ROC (área = {roc_auc:.2f})",  # F541 corrigido
+    )
+    plt.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('Taxa de Falsos Positivos')
-    plt.ylabel('Taxa de Verdadeiros Positivos (Recall)')
-    plt.title('Curva ROC - Modelo XGBoost')
+    plt.xlabel("Taxa de Falsos Positivos")
+    plt.ylabel("Taxa de Verdadeiros Positivos (Recall)")
+    plt.title("Curva ROC - Modelo XGBoost")
     plt.legend(loc="lower right")
     roc_curve_path = REPORTS_DIR / "roc_curve_xgboost.png"
     plt.savefig(roc_curve_path)
@@ -79,10 +88,12 @@ def evaluate_model_deeply():
     y_pred_baseline = baseline_model.predict(X_test)
 
     print("📄 Relatório de Classificação (Baseline):")
-    print(classification_report(y_test, y_pred_baseline, target_names=['No', 'Yes']))
+    print(classification_report(y_test, y_pred_baseline, target_names=["No", "Yes"]))
 
-    precision_base, recall_base, f1_base, _ = precision_recall_fscore_support(y_test, y_pred_baseline, average='binary', pos_label=1)
-    print(f"Métricas do Baseline para a classe 'Yes' (Turnover):")
+    precision_base, recall_base, f1_base, _ = precision_recall_fscore_support(
+        y_test, y_pred_baseline, average="binary", pos_label=1
+    )
+    print("Métricas do Baseline para a classe 'Yes' (Turnover):")
     print(f"  - Precisão: {precision_base:.2f}")
     print(f"  - Recall (Revocação): {recall_base:.2f}")
     print(f"  - F1-Score: {f1_base:.2f}")

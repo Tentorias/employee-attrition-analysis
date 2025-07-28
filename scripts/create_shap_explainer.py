@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+
 import joblib
 import shap
 
@@ -10,6 +11,7 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def create_and_save_explainer(model_path: str, output_path: str):
     """
@@ -20,9 +22,9 @@ def create_and_save_explainer(model_path: str, output_path: str):
         model = joblib.load(model_path)
 
         logger.info("Criando o objeto explicador SHAP...")
-        
-        if hasattr(model, 'steps'):
-            actual_model = model.named_steps['classifier']
+
+        if hasattr(model, "steps"):
+            actual_model = model.named_steps["classifier"]
         else:
             actual_model = model
 
@@ -32,10 +34,10 @@ def create_and_save_explainer(model_path: str, output_path: str):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             logger.info(f"Diretório criado: {output_dir}")
-        
+
         logger.info(f"Salvando o explicador SHAP em: {output_path}")
         joblib.dump(explainer, output_path)
-        
+
         logger.info(f"✅ Explicador SHAP salvo com sucesso em: {output_path}")
 
     except FileNotFoundError as e:
@@ -44,6 +46,7 @@ def create_and_save_explainer(model_path: str, output_path: str):
     except Exception as e:
         logger.error(f"❌ Ocorreu um erro inesperado: {e}")
         raise
+
 
 def main():
     """
@@ -60,6 +63,7 @@ def main():
         model_path=args.model_path,
         output_path=args.output_path,
     )
+
 
 if __name__ == "__main__":
     main()

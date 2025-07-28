@@ -2,13 +2,17 @@
 
 # scripts/create_explainer.py
 
-import joblib
-import pandas as pd
-import shap
 import logging
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+import joblib
+import pandas as pd
+import shap
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 def generate_and_save_explainer():
     """
@@ -16,7 +20,7 @@ def generate_and_save_explainer():
     o objeto SHAP Explainer necessário para a aplicação Streamlit.
     """
     project_root = Path(__file__).resolve().parent.parent
-    
+
     # Caminhos para os artefatos necessários
     model_path = project_root / "models" / "production_model.pkl"
     x_test_path = project_root / "artifacts" / "features" / "X_test.csv"
@@ -30,7 +34,9 @@ def generate_and_save_explainer():
         X_test = pd.read_csv(x_test_path)
 
         # O modelo real está dentro do pipeline
-        actual_model = model.named_steps['classifier'] if hasattr(model, 'steps') else model
+        actual_model = (
+            model.named_steps["classifier"] if hasattr(model, "steps") else model
+        )
 
         logging.info("Criando o objeto SHAP Explainer...")
         explainer = shap.Explainer(actual_model, X_test)
@@ -41,9 +47,12 @@ def generate_and_save_explainer():
         logging.info("✅ Objeto SHAP Explainer criado e salvo com sucesso!")
 
     except FileNotFoundError as e:
-        logging.error(f"Erro: Arquivo não encontrado. Certifique-se de que o pipeline de treino foi executado primeiro. Detalhes: {e}")
+        logging.error(
+            f"Erro: Arquivo não encontrado. Certifique-se de que o pipeline de treino foi executado primeiro. Detalhes: {e}"
+        )
     except Exception as e:
         logging.error(f"Ocorreu um erro inesperado: {e}")
+
 
 if __name__ == "__main__":
     generate_and_save_explainer()

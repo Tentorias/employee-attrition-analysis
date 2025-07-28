@@ -28,4 +28,3 @@ database/hr_analytics.db # Evita incluir o banco de dados na imagem
 .env
 
 # .gitignore
-

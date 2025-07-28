@@ -5,7 +5,7 @@ POETRY_RUN = poetry run
 
 # --- VARIÁVEIS COM CAMINHOS DE ARTEFATOS ---
 RAW_DATA_PATH = data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv
-PROCESSED_DATA_PATH = data/processed/employee_attrition_processed.csv 
+PROCESSED_DATA_PATH = data/processed/employee_attrition_processed.csv
 MODEL_EVAL_PATH = artifacts/models/model.pkl
 FEATURES_PATH = artifacts/features/features.pkl
 BEST_PARAMS_PATH = artifacts/models/best_params.json
@@ -13,7 +13,7 @@ X_TEST_PATH = artifacts/features/X_test.csv
 Y_TEST_PATH = artifacts/features/y_test.csv
 PROD_MODEL_PATH = models/production_model.pkl
 OPTIMAL_THRESHOLD_PATH = artifacts/models/optimal_threshold.pkl
-SHAP_EXPLAINER_PATH = models/production_shap_explainer.pkl 
+SHAP_EXPLAINER_PATH = models/production_shap_explainer.pkl
 
 
 # --- RECEITAS PRINCIPAIS ---
@@ -93,7 +93,7 @@ run-pipeline: db-seed
 	@echo "Iniciando o pipeline completo de ML..."
 	$(POETRY_RUN) python src/attrition/main.py run-pipeline
 	@echo "✅ Pipeline de ML concluído."
-	
+
 	# NOVO: Gerar o SHAP Explainer após o pipeline de ML
 	$(MAKE) create-explainer # Chama a receita create-explainer
 	@echo "✅ SHAP Explainer gerado e salvo."
