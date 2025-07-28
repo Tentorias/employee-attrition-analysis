@@ -36,8 +36,7 @@ jobs:
 
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root # Isso instalará dependências de produção E de desenvolvimento (incluindo pytest-cov)
-          # REMOVA A LINHA: poetry run pip install pytest-cov, pois 'poetry install' já o fará corretamente.
+          poetry install --no-root 
 
       - name: Executar lint (flake8)
         run: |
@@ -45,7 +44,14 @@ jobs:
 
       - name: Executar testes (pytest)
         run: |
+          # Executa o pytest com cobertura de código
           poetry run pytest --cov=src
+        env: # <--- ADICIONE ESTE BLOCO DE AMBIENTE
+          # Torna a DATABASE_URL disponível para os testes
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} 
+          # Garante que o Python encontre os módulos dentro de 'src'
+          PYTHONPATH: ${{ github.workspace }} # O github.workspace aponta para a raiz do seu repositório
+                                            # onde a pasta 'src' está localizada.
 
       - name: Rodar pre-commit (opcional)
         run: |
