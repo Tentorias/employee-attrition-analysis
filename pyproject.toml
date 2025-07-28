@@ -30,19 +30,19 @@ lightgbm = "^4.6.0"
 python-multipart = "^0.0.9"
 
 
-# lista as dependências de desenvolvimento
+# Dependências que antes eram gerais, mas são de desenvolvimento (opcional para manter aqui)
 matplotlib = "^3.10.3"
 seaborn = "^0.13.2"
 statsmodels = "^0.14.5"
 patsy = "^1.0.1"
+# REMOVA pytest-cov = "^6.2.1" DAQUI
+
+
+# lista as dependências de desenvolvimento (NOVO LUGAR PARA PYTEST-COV)
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 pre-commit = "^3.7.1"
 black = "^24.4.2"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
-
-# configuração do build
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+pytest-cov = "^6.2.1" # <-- ADICIONE PYTEST-COV AQUI

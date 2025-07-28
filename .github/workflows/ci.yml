@@ -34,11 +34,10 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
-      # --- AJUSTE AQUI: Mude '--without dev' para instalar as dependências de desenvolvimento ---
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root # Remove --without dev para instalar dependências de desenvolvimento
-                                   # --no-root ainda evita instalar o próprio projeto como um pacote
+          poetry install --no-root # Isso instalará dependências de produção E de desenvolvimento (incluindo pytest-cov)
+          # REMOVA A LINHA: poetry run pip install pytest-cov, pois 'poetry install' já o fará corretamente.
 
       - name: Executar lint (flake8)
         run: |
