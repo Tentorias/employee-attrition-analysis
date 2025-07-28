@@ -10,8 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      # --- AJUSTE AQUI: Mude as versões do Python ---
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10'] # Apenas 3.10, conforme ^3.10 do poetry.lock
       fail-fast: false
 
     steps:
@@ -23,31 +24,21 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # --- NOVO PASSO: Instalar Poetry ---
       - name: Instalar Poetry
         run: |
           pip install poetry
 
-      # --- Ajustar Cache para Poetry ---
       - name: Configurar cache de dependências Poetry
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pypoetry/virtualenvs # Caminho do cache do Poetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }} # Chave baseada no poetry.lock
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
-      # --- Ajustar Instalação de Dependências com Poetry ---
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root --no-dev # Instala dependências do projeto.
-                                           # --no-root: Não instala o pacote raiz (seu projeto)
-                                           # --no-dev: Não instala dependências de desenvolvimento
-                                           # Se seu projeto tiver dependências de dev importantes para o CI (ex: flake8, pytest),
-                                           # use 'poetry install' sem flags ou 'poetry install --no-root'.
+          poetry install --no-root --no-dev 
 
-      # --- Ajustar Execução de Comandos com Poetry ---
-      # Todos os comandos que usavam '. .venv/bin/activate' e 'pip install'
-      # agora devem usar 'poetry run'
       - name: Executar lint (flake8)
         run: |
           poetry run flake8 src tests
