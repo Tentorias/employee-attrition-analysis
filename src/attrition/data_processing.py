@@ -35,7 +35,7 @@ def load_and_preprocess_data(model_features_list=None):
     if df.empty:
         try:
             project_root_temp = Path(__file__).resolve().parent.parent.parent
-            csv_path = project_root_temp / "data" / "WA_Fn-UseC_-HR-HR-Employee-Attrition.csv" 
+            csv_path = project_root_temp / "data" / "raw" / "WA_Fn-UseC_-HR-Employee-Attrition.csv" # Corrigido para data/raw/
             df = pd.read_csv(csv_path)
             print("Dados carregados do CSV.")
         except FileNotFoundError:
@@ -45,10 +45,10 @@ def load_and_preprocess_data(model_features_list=None):
     if df.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    # --- Forçar EmployeeNumber para int logo no início ---
+    # --- NOVO: Forçar EmployeeNumber para int logo no início ---
     if 'EmployeeNumber' in df.columns:
         df['EmployeeNumber'] = df['EmployeeNumber'].astype(int)
- 
+    # ---------------------------------------------------------
 
 
     # --- DataFrame para UI (manter colunas originais relevantes) ---
@@ -68,9 +68,10 @@ def load_and_preprocess_data(model_features_list=None):
     ]
     df_for_ui = df_for_ui[[col for col in ui_cols if col in df_for_ui.columns]].copy()
     
+    # EmployeeNumber já foi garantido como int no início do df original.
 
 
-    # --- DataFrame para o Modelo de ML ---
+    # --- DataFrame para o Modelo de ML (aplicar todas as transformações) ---
     df_model = df.copy() 
 
     if 'Attrition' in df_model.columns:
@@ -104,10 +105,10 @@ def load_and_preprocess_data(model_features_list=None):
     df_model = pd.get_dummies(df_model, columns=categorical_cols_for_ohe, drop_first=True, dtype=float)
 
 
-
+    # --- NOVO: Excluir EmployeeNumber do escalonamento ---
     numeric_cols_to_scale = df_model.select_dtypes(include=[np.number]).columns.tolist()
     numeric_cols_to_scale = [col for col in numeric_cols_to_scale if col not in ['Attrition', 'high_job_satisfaction', 'EmployeeNumber']] # Excluir EmployeeNumber
-
+    # ---------------------------------------------------
     
     if numeric_cols_to_scale:
         scaler = StandardScaler()
@@ -116,11 +117,10 @@ def load_and_preprocess_data(model_features_list=None):
     else:
         print("Nenhuma coluna numérica para escalonar.")
         
-
+    # Assegurar que as dummies são float e outras numericas são float
     for col in df_model.columns:
         if df_model[col].dtype == 'bool':
             df_model[col] = df_model[col].astype(float) 
-
         elif df_model[col].dtype == 'int64' and col not in ['Attrition', 'EmployeeNumber']: 
              if col not in numeric_cols_to_scale: 
                  df_model[col] = df_model[col].astype(float)
@@ -132,7 +132,7 @@ def load_and_preprocess_data(model_features_list=None):
 
     return df_model, df_for_ui 
 
-
+# Exemplo de uso (para teste)
 if __name__ == "__main__":
     current_dir = Path(__file__).resolve().parent.parent.parent
     MODEL_FEATURES_PATH_FOR_TEST = current_dir / "artifacts" / "features" / "features.pkl"

@@ -137,10 +137,9 @@ with tab_team:
 
     team_df = df_for_ui[df_for_ui['Department'] == selected_dept]
     
-    # Adicionar uma verificação antes de sort_values caso team_df esteja vazio
     if team_df.empty:
         st.info(f"Nenhum funcionário encontrado no departamento '{selected_dept}'.")
-        emp_options = {} # Define emp_options como vazio para não dar erro no selectbox
+        emp_options = {} 
     else:
         team_sorted = team_df.sort_values(by='predicted_probability', ascending=False)
         emp_options = {f"{row['JobRole']} (ID: {row['EmployeeNumber']})": row['EmployeeNumber'] for _, row in team_sorted.iterrows()}
@@ -151,7 +150,6 @@ with tab_team:
             st.session_state.selected_employee_id = int(emp_options[selected_emp_key])
             st.success(f"Funcionário {st.session_state.selected_employee_id} carregado! Verifique a aba de Diagnóstico.")
     
-    # Exibir o DataFrame da equipe apenas se não estiver vazio
     if not team_df.empty:
         team_display = team_sorted.copy()
         team_display['risk_percent'] = team_display['predicted_probability'] * 100
@@ -201,7 +199,7 @@ else:
 
 # --- ABA 2: Diagnóstico Individual ---
 with tab_individual:
-    st.header(f"Diagnóstico para o Funcionário: {employee_data_ui['EmployeeNumber']}")
+    st.header(f"Diagnóstico para o Funcionário: {employee_data_ui['EmployeeNumber']}") 
     st.metric("Risco Atual de Saída", f"{employee_data_ui['predicted_probability']:.1%}")
 
     # Calcula e exibe os fatores de risco SHAP

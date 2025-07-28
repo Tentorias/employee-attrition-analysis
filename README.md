@@ -138,17 +138,18 @@ poetry run uvicorn api.main:app --reload
 
 ---
 
-## 📊 **Resultados do Modelo (Otimizado para Recall)**
+## 📊 **Resultados do Modelo (Otimizado para F1-Score com Precisão Mínima)**
 
-O modelo final foi calibrado para atender à necessidade de negócio de minimizar a perda de talentos, priorizando um alto Recall.
+O modelo final foi calibrado para maximizar o F1-score da classe 'Sai', garantindo uma Precision mínima de 60%.
 
-| Métrica            | Modelo Otimizado (Prod) |
-|--------------------|--------------------------|
-| Precision (Yes)    | 0.41 (41%)               |
-| Recall (Yes)       | 0.74 (74%)               |
-| F1-Score (Yes)     | 0.53 (53%)               |
+| Métrica          | Modelo Calibrado (Prod) |
+|------------------|-------------------------|
+| Precision (Sai)  | 0.61 (61%)              |
+| Recall (Sai)     | 0.43 (43%)              |
+| F1-Score (Sai)   | 0.50 (50%)              |
 
-### **Exportar para as Planilhas:**
+### **Interpretação dos Resultados:**
 
-- **Recall de 74%:** O modelo consegue identificar corretamente 3 em cada 4 funcionários que de fato sairiam. Essa é a métrica mais importante para a estratégia de retenção.
-- **Precision de 41%:** De cada 10 funcionários sinalizados como risco, aproximadamente 4 são casos de risco real, permitindo que a ação do RH seja focada e eficiente.
+- **Precision de 61%:** De cada 10 funcionários sinalizados como risco de saída pelo modelo, aproximadamente 6 são de fato casos de risco real. Isso garante que as ações do RH sejam focadas e eficientes, minimizando intervenções desnecessárias.
+- **Recall de 43%:** O modelo consegue identificar corretamente 4 em cada 10 funcionários que de fato sairiam. Isso representa um trade-off: para alcançar a alta precisão desejada (61%), o modelo se tornou mais seletivo e, consequentemente, identifica uma menor parcela dos casos reais de saída.
+- **F1-Score de 50%:** Este valor reflete o balanço entre Precision e Recall. Embora a Precision seja forte, o Recall ainda apresenta espaço para melhoria. Isso indica que, dada a restrição de Precision, o modelo busca um balanço aceitável, mas há um caminho para explorar a detecção de mais casos de saída.

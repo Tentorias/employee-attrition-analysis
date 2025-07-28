@@ -5,6 +5,7 @@ import json
 import joblib
 import numpy as np
 import pandas as pd
+import os # Importar os para os.path.join
 
 def main(model_path: str, threshold_path: str, features_path: str, input_data: dict):
     """
@@ -13,39 +14,35 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
     """
     try:
         model = joblib.load(model_path)
-        # Carregar o threshold salvo pelo evaluate.py
-        threshold = joblib.load(threshold_path)
+        threshold = joblib.load(threshold_path) # Carregar o threshold salvo pelo evaluate.py
         feature_names = joblib.load(features_path)
 
         X_new = pd.DataFrame([input_data])
 
         # As transformações aqui precisam ser as mesmas de data_processing.py e train.py!
-        # Isso é um ponto crítico de consistência.
-        # Idealmente, você chamaria uma função de pré-processamento unificada.
-        # Por enquanto, garanta que estas etapas abaixo são idênticas ao preprocess() em train.py
-        # e ao que load_and_preprocess_data faz para df_model.
-
+        # Replicar o preprocess do train.py
         cols_to_drop = ['EmployeeCount', 'StandardHours', 'Over18']
-        X_new.drop(columns=[col for col in cols_to_drop if col in X_new.columns], errors='ignore', inplace=True)
-        
-        if 'TotalWorkingYears' in X_new.columns and 'NumCompaniesWorked' in X_new.columns:
-            # Note: A API usa `+1` no denominador, train.py usa `.replace(0,1)`. Precisa ser consistente!
-            # Mantenha o que está no train.py/data_processing.py
-            X_new['YearsPerCompany'] = X_new['TotalWorkingYears'] / X_new['NumCompaniesWorked'].replace(0, 1) 
-        
-        if 'MonthlyIncome' in X_new.columns:
-            X_new['MonthlyIncome_log'] = np.log1p(X_new['MonthlyIncome'])
-        
-        if 'TotalWorkingYears' in X_new.columns:
-            X_new['TotalWorkingYears_log'] = np.log1p(X_new['TotalWorkingYears'])
+        input_df.drop(columns=[col for col in cols_to_drop if col in input_df.columns], errors='ignore', inplace=True) # Usar errors='ignore'
 
-        cat_cols = X_new.select_dtypes(include=["object"]).columns.tolist()
+        if 'Gender' in input_df.columns: # Mapeamento de gênero
+            input_df['Gender'] = input_df['Gender'].map({"Male": 1, "Female": 0})
+        
+        if 'TotalWorkingYears' in input_df.columns and 'NumCompaniesWorked' in input_df.columns:
+            input_df['YearsPerCompany'] = input_df['TotalWorkingYears'] / input_df['NumCompaniesWorked'].replace(0, 1) 
+        
+        if 'MonthlyIncome' in input_df.columns:
+            input_df['MonthlyIncome_log'] = np.log1p(input_df['MonthlyIncome'])
+        
+        if 'TotalWorkingYears' in input_df.columns:
+            input_df['TotalWorkingYears_log'] = np.log1p(input_df['TotalWorkingYears'])
+
+        cat_cols = input_df.select_dtypes(include=["object"]).columns.tolist()
         if cat_cols:
-            X_new = pd.get_dummies(X_new, columns=cat_cols, drop_first=True, dtype=float)
+            input_df = pd.get_dummies(input_df, columns=cat_cols, drop_first=True, dtype=float)
 
 
         # Reindexa para garantir que as colunas e ordem correspondam às do treinamento
-        X_new_aligned = X_new.reindex(columns=feature_names, fill_value=0)
+        X_new_aligned = input_df.reindex(columns=feature_names, fill_value=0.0) # Garantir fill_value=0.0
 
         # Prever probabilidade
         probability = model.predict_proba(X_new_aligned)[:, 1][0]
@@ -64,9 +61,10 @@ def cli_main():
     parser = argparse.ArgumentParser(
         description="Faz a predição a partir de um arquivo JSON."
     )
-    parser.add_argument("--model-path", default="models/production_model.pkl", help="Caminho para o modelo treinado.")
-    parser.add_argument("--threshold-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para o threshold salvo.")
-    parser.add_argument("--features-path", default="artifacts/features/features.pkl", help="Caminho para o arquivo de features.")
+    # Default paths for cli_main
+    parser.add_argument("--model-path", default=os.path.join("models", "production_model.pkl"), help="Caminho para o modelo treinado.")
+    parser.add_argument("--threshold-path", default=os.path.join("artifacts", "models", "optimal_threshold.pkl"), help="Caminho para o threshold salvo.")
+    parser.add_argument("--features-path", default=os.path.join("artifacts", "features", "features.pkl"), help="Caminho para o arquivo de features.")
     parser.add_argument(
         "--input-file",
         required=True,
