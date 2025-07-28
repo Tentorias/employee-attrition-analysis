@@ -1,5 +1,4 @@
 # src/attrition/models/evaluate.py 
-# src/attrition/models/evaluate.py 
 import argparse
 import logging
 import sys
@@ -7,7 +6,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, precision_score, recall_score, f1_score
-import os # <--- ADICIONE ESTA LINHA
+import os 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -57,9 +56,8 @@ def find_optimal_threshold_f1_constrained_precision(model, X_val, y_val, min_pre
 
     logger.info(f"✅ Threshold ótimo encontrado: {best_threshold:.2f} (Precisão: {final_precision:.2f}, Recall: {final_recall:.2f}, F1-Score: {final_f1:.2f})")
     
-    # Adicionar o salvamento do threshold aqui
+    
     threshold_output_path = "artifacts/models/optimal_threshold.pkl" 
-    # ensure_dir é definida em main.py, mas aqui criamos o diretório diretamente para garantir
     os.makedirs(os.path.dirname(threshold_output_path), exist_ok=True)
     joblib.dump(best_threshold, threshold_output_path)
     logger.info(f"✅ Threshold ótimo salvo em: {threshold_output_path}")
@@ -80,7 +78,6 @@ def evaluate_with_threshold(model, X_test, y_test, threshold: float):
     logger.info("--- Matriz de Confusão ---")
     logger.info("\n" + str(cm))
 
-# A assinatura da função main agora aceita 'threshold_output_path'
 def main(model_path: str, x_test_path: str, y_test_path: str, threshold_output_path: str = "artifacts/models/optimal_threshold.pkl"): 
     try:
         logger.info("Iniciando a avaliação do modelo...")
@@ -88,7 +85,6 @@ def main(model_path: str, x_test_path: str, y_test_path: str, threshold_output_p
         X_test = pd.read_csv(x_test_path)
         y_test = pd.read_csv(y_test_path).squeeze("columns")
         
-        # Chamar a nova função de otimização de threshold
         optimal_threshold = find_optimal_threshold_f1_constrained_precision(model, X_test, y_test, min_precision_target=0.60) 
         
         evaluate_with_threshold(model, X_test, y_test, optimal_threshold)
@@ -104,6 +100,6 @@ if __name__ == "__main__":
     parser.add_argument("--model-path", default="artifacts/models/model.pkl")
     parser.add_argument("--x-test-path", default="artifacts/features/X_test.csv")
     parser.add_argument("--y-test-path", default="artifacts/features/y_test.csv")
-    parser.add_argument("--threshold-output-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para salvar o threshold ótimo.") # Novo argumento
+    parser.add_argument("--threshold-output-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para salvar o threshold ótimo.") 
     args = parser.parse_args()
     main(**vars(args))

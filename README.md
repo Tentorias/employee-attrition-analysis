@@ -153,3 +153,5 @@ O modelo final foi calibrado para maximizar o F1-score da classe 'Sai', garantin
 - **Precision de 61%:** De cada 10 funcionários sinalizados como risco de saída pelo modelo, aproximadamente 6 são de fato casos de risco real. Isso garante que as ações do RH sejam focadas e eficientes, minimizando intervenções desnecessárias.
 - **Recall de 43%:** O modelo consegue identificar corretamente 4 em cada 10 funcionários que de fato sairiam. Isso representa um trade-off: para alcançar a alta precisão desejada (61%), o modelo se tornou mais seletivo e, consequentemente, identifica uma menor parcela dos casos reais de saída.
 - **F1-Score de 50%:** Este valor reflete o balanço entre Precision e Recall. Embora a Precision seja forte, o Recall ainda apresenta espaço para melhoria. Isso indica que, dada a restrição de Precision, o modelo busca um balanço aceitável, mas há um caminho para explorar a detecção de mais casos de saída.
+
+

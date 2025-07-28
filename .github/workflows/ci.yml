@@ -23,31 +23,39 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Configurar cache de dependências
+      # --- NOVO PASSO: Instalar Poetry ---
+      - name: Instalar Poetry
+        run: |
+          pip install poetry
+
+      # --- Ajustar Cache para Poetry ---
+      - name: Configurar cache de dependências Poetry
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          path: ~/.cache/pypoetry/virtualenvs # Caminho do cache do Poetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }} # Chave baseada no poetry.lock
+          restore-keys: ${{ runner.os }}-poetry-
 
-      - name: Instalar dependências
+      # --- Ajustar Instalação de Dependências com Poetry ---
+      - name: Instalar dependências com Poetry
         run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          poetry install --no-root --no-dev # Instala dependências do projeto.
+                                           # --no-root: Não instala o pacote raiz (seu projeto)
+                                           # --no-dev: Não instala dependências de desenvolvimento
+                                           # Se seu projeto tiver dependências de dev importantes para o CI (ex: flake8, pytest),
+                                           # use 'poetry install' sem flags ou 'poetry install --no-root'.
 
+      # --- Ajustar Execução de Comandos com Poetry ---
+      # Todos os comandos que usavam '. .venv/bin/activate' e 'pip install'
+      # agora devem usar 'poetry run'
       - name: Executar lint (flake8)
         run: |
-          . .venv/bin/activate
-          flake8 src tests
+          poetry run flake8 src tests
 
       - name: Executar testes (pytest)
         run: |
-          . .venv/bin/activate
-          pytest --cov=src
+          poetry run pytest --cov=src
 
       - name: Rodar pre-commit (opcional)
         run: |
-          . .venv/bin/activate
-          pre-commit run --all-files
+          poetry run pre-commit run --all-files

@@ -1,13 +1,12 @@
 import sys
-import os
 from pathlib import Path
 import joblib
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
 
 # --- CONFIGURAÇÕES INICIAIS ---
+
 st.set_page_config(
     page_title="Diagnóstico de Turnover",
     layout="wide",
@@ -28,6 +27,7 @@ except ImportError:
     st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")
 
 # --- CONSTANTES ---
+
 MODEL_PATH = project_root / "models" / "production_model.pkl"
 FEATURES_PATH = project_root / "artifacts" / "features" / "features.pkl"
 SHAP_EXPLAINER_PATH = project_root / "models" / "production_shap_explainer.pkl"
@@ -74,7 +74,7 @@ def translate_feature_name(feature_name):
 
 st.title("💡 Ferramenta Tática de Análise de Turnover")
 
-# Carregar modelo e features primeiro
+
 model, model_features, explainer = load_model_artifacts()
 
 if not all([model, model_features, explainer]):
@@ -87,7 +87,6 @@ def get_preprocessed_employee_data_and_ui(features_list_from_model):
     """Carrega e pré-processa os dados, retornando DF para modelo e DF para UI."""
     return load_and_preprocess_data(model_features_list=features_list_from_model)
 
-# Chama a função de carregamento, recebendo os dois DataFrames
 df_model_ready, df_for_ui = get_preprocessed_employee_data_and_ui(model_features) 
 
 if df_model_ready.empty or df_for_ui.empty: 
@@ -101,11 +100,18 @@ if 'EmployeeNumber' not in df_model_ready.columns or 'EmployeeNumber' not in df_
 
 df_model_ready['EmployeeNumber'] = df_model_ready['EmployeeNumber'].astype(int)
 df_for_ui['EmployeeNumber'] = df_for_ui['EmployeeNumber'].astype(int)
-# ----------------------------------------------------------------------------------
 
-# --- ADICIONAR A PROBABILIDADE PREDITA COM TRATAMENTO DE ERRO ---
+
+# --- ADICIONA A PROBABILIDADE PREDITA COM TRATAMENTO DE ERRO ---
 try:
     df_for_ui['predicted_probability'] = model.predict_proba(df_model_ready)[:, 1]
+    # --- VERIFICAÇÃO DE PROBABILIDADES EM TEMPO REAL NO STREAMLIT ---
+    st.sidebar.subheader("Verificação de Probabilidades")
+    st.sidebar.write("Probabilidades calculadas (primeiras 5):")
+    st.sidebar.write(df_for_ui['predicted_probability'].head())
+    st.sidebar.write("Estatísticas das probabilidades calculadas:")
+    st.sidebar.write(df_for_ui['predicted_probability'].describe())
+
 except Exception as e:
     st.error(f"Erro ao calcular probabilidades de predição: {e}. Verifique a compatibilidade do modelo com o DataFrame processado.")
     st.stop()
@@ -114,7 +120,7 @@ except Exception as e:
 if 'predicted_probability' not in df_for_ui.columns:
     st.error("Coluna 'predicted_probability' não foi adicionada a df_for_ui. Verifique o cálculo de predição.")
     st.stop()
-# ---------------------------------------------------------------
+
 
 # --- AJUSTE NA INICIALIZAÇÃO DE selected_employee_id ---
 if not df_for_ui['EmployeeNumber'].empty: 
@@ -179,7 +185,7 @@ st.sidebar.write(f"Is selected_employee_id in df_model_ready['EmployeeNumber'] v
 
 # --- FIM DOS DEBUGGING PRINTS ---
 
-# Filtrar df_model_ready e df_for_ui usando o ID selecionado (agora garantidamente int)
+
 filtered_df_model = df_model_ready[df_model_ready['EmployeeNumber'] == st.session_state.selected_employee_id]
 
 if not filtered_df_model.empty:

@@ -27,7 +27,7 @@ def main():
     p.add_argument("--y-test-path", default="artifacts/features/y_test.csv", help="Caminho para salvar y_test.")
     p.add_argument("--prod-model-path", default="models/production_model.pkl", help="Caminho para salvar modelo de produção.")
     p.add_argument("--tune", action="store_true", help="Ativa a otimização com Optuna.")
-    p.add_argument("--threshold-output-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para salvar o threshold ótimo.") # NOVO ARGUMENTO
+    p.add_argument("--threshold-output-path", default="artifacts/models/optimal_threshold.pkl", help="Caminho para salvar o threshold ótimo.") 
 
     args = parser.parse_args()
 
@@ -40,7 +40,7 @@ def main():
         ensure_dir(args.x_test_path)
         ensure_dir(args.y_test_path)
         ensure_dir(args.prod_model_path)
-        os.makedirs(os.path.dirname(args.threshold_output_path), exist_ok=True) # Garante o diretório do threshold aqui tb
+        os.makedirs(os.path.dirname(args.threshold_output_path), exist_ok=True) 
 
         logging.info("\n[ETAPA 1/3] Processando dados e treinando modelo de avaliação...")
         train.main(
