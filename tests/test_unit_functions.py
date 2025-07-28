@@ -4,6 +4,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
+from attrition.models.train import preprocess  # <-- Importado uma única vez no topo
+
 
 # --------- Fixtures e Classes de Apoio ---------
 
@@ -37,10 +39,6 @@ def test_preprocess_function_logic():
         "Department": ["Sales", "Research & Development"],
     }
     df_raw = pd.DataFrame(raw_data)
-
-    # Importando a função preprocess do local CORRETO para teste de unidade.
-    from attrition.models.train import \
-        preprocess  # Movido para dentro do teste para F401
 
     # Executa a função a ser testada
     df_processed = preprocess(df_raw)
