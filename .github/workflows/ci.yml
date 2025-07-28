@@ -34,10 +34,11 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
-      # --- AJUSTE AQUI: Mude '--no-dev' para '--without dev' ---
+      # --- AJUSTE AQUI: Mude '--without dev' para instalar as dependências de desenvolvimento ---
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root --without dev # Corrigido para a sintaxe do Poetry 2.x
+          poetry install --no-root # Remove --without dev para instalar dependências de desenvolvimento
+                                   # --no-root ainda evita instalar o próprio projeto como um pacote
 
       - name: Executar lint (flake8)
         run: |
