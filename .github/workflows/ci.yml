@@ -10,9 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      # --- AJUSTE AQUI: Mude as versões do Python ---
       matrix:
-        python-version: ['3.10'] # Apenas 3.10, conforme ^3.10 do poetry.lock
+        python-version: ['3.10']
       fail-fast: false
 
     steps:
@@ -28,8 +27,9 @@ jobs:
         run: |
           pip install poetry
 
+      # --- AJUSTE AQUI: Mude de uses: actions/cache@v2 para @v3 ou @v4 ---
       - name: Configurar cache de dependências Poetry
-        uses: actions/cache@v2
+        uses: actions/cache@v4 # Mude para v4 (ou v3 se preferir, mas v4 é mais recente)
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
@@ -37,7 +37,7 @@ jobs:
 
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root --no-dev 
+          poetry install --no-root --no-dev
 
       - name: Executar lint (flake8)
         run: |
