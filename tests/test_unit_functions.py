@@ -1,6 +1,3 @@
-# tests/test_unit_functions.py
-
-import os  # noqa: E402
 import sys
 from pathlib import Path
 
@@ -9,10 +6,13 @@ import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 
 # --- ADICIONE O BLOCO DE AJUSTE DO sys.path AQUI (APÓS IMPORTS, ANTES DE QUALQUER CÓDIGO/CLASSE) ---
-project_root = Path(__file__).resolve().parent.parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+_project_root = Path(__file__).resolve().parent.parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
 # -------------------------------------------------------------------------------------------------
+
+
+# --- tests/test_unit_functions.py ---
 
 
 # Agora, o import do seu projeto deve funcionar sem E402
