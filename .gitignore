@@ -26,9 +26,9 @@ Thumbs.db
 # Ignorar checkpoints do Jupyter
 **/.ipynb_checkpoints/
 
-# Ignorar todos os arquivos de modelo e artefatos binários
-# *.pkl
-
 # Ignorar dados processados e saídas
 /data/processed/
 /outputs/
+
+# Ignorar todos os notebooks Jupyter
+*.ipynb
