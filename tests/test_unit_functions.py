@@ -1,17 +1,18 @@
 # tests/test_unit_functions.py
 # Este arquivo testa a lógica de funções individuais do projeto refatorado.
 
+import sys # <--- ADICIONE ESTA LINHA
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.metrics import classification_report, confusion_matrix
 
-from attrition.models.train import \
-    preprocess  
+from attrition.models.train import preprocess
+
 
 # --------- Fixtures e Classes de Apoio ---------
 
-project_root = Path(__file__).resolve().parent.parent.parent 
+project_root = Path(__file__).resolve().parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
