@@ -36,7 +36,7 @@ jobs:
 
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root 
+          poetry install --no-root
 
       - name: Executar lint (flake8)
         run: |
@@ -46,8 +46,8 @@ jobs:
         run: |
           poetry run pytest --cov=src
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }} 
-          PYTHONPATH: ${{ github.workspace }}/src 
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: ${{ github.workspace }}/src
 
       # --- AJUSTE AQUI: Rodar pre-commit (opcional) ---
       - name: Rodar pre-commit
@@ -55,8 +55,8 @@ jobs:
           # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas (boa prática)
           rm -rf ~/.cache/pre-commit
           # Instala ou atualiza os hooks para garantir que executáveis sejam encontrados
-          poetry run pre-commit install --install-hooks 
-          poetry run pre-commit autoupdate 
-          poetry run pre-commit run --all-files --show-diff-on-failure 
-        env: 
+          poetry run pre-commit install --install-hooks
+          poetry run pre-commit autoupdate
+          poetry run pre-commit run --all-files --show-diff-on-failure
+        env:
           PYTHONPATH: ${{ github.workspace }}

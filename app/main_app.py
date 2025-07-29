@@ -11,7 +11,10 @@ from src.attrition.data_processing import load_and_preprocess_data
 
 try:
     from app.ui_config import (  # E402: Movido para o topo do módulo
-        LABEL_MAPPING, UNACTIONABLE_FEATURES, VALUE_MAPPING)
+        LABEL_MAPPING,
+        UNACTIONABLE_FEATURES,
+        VALUE_MAPPING,
+    )
 except ImportError:
     LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES = {}, {}, []
     st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")

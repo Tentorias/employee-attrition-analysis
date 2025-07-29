@@ -4,8 +4,14 @@ import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from sklearn.metrics import (auc, classification_report, confusion_matrix,
-                             precision_recall_curve, roc_auc_score, roc_curve)
+from sklearn.metrics import (
+    auc,
+    classification_report,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_auc_score,
+    roc_curve,
+)
 
 # --- CONFIGURAÇÕES ---
 # Define os caminhos para os artefatos, subindo para a raiz do projeto

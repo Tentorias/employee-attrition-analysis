@@ -4,8 +4,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (auc, classification_report,
-                             precision_recall_fscore_support, roc_curve)
+from sklearn.metrics import (
+    auc,
+    classification_report,
+    precision_recall_fscore_support,
+    roc_curve,
+)
 
 # --- Configuração de Caminhos ---
 BASE_DIR = Path(__file__).resolve().parent.parent

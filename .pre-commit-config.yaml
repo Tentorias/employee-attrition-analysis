@@ -1,34 +1,24 @@
-# .pre-commit-config.yaml
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0 # Mantenha esta ou a versão que você testou e que funciona
+    rev: v4.6.0
     hooks:
-      # Desabilite explicitamente os hooks que estão com problema de "Executable not found"
-      - id: trailing-whitespace
-        enabled: false # Desabilita este hook
-      - id: end-of-file-fixer
-        enabled: false # Desabilita este hook
-      - id: check-added-large-files
-        enabled: false # Desabilita este hook
       - id: check-yaml
       - id: check-json
-      # MANTENHA SOMENTE OS HOOKS QUE VOCÊ QUER QUE RODEM E SÃO COMPATÍVEIS
 
   - repo: https://github.com/psf/black
-    rev: 24.4.2 # Use a versão do seu pyproject.toml
+    rev: 24.4.2
     hooks:
       - id: black
         language_version: python3.10
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2 # Use a versão do seu pyproject.toml
+    rev: 5.13.2
     hooks:
       - id: isort
         name: isort (Python)
         args: ["--profile", "black"]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0 # Use a versão do seu pyproject.toml
+    rev: 7.0.0
     hooks:
       - id: flake8
-        # args: ["--max-line-length=120"] # Se você tem essa regra no seu flake8
