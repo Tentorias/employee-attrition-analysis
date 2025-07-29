@@ -4,8 +4,9 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
-from attrition.models.train import preprocess  # <-- Importado uma única vez no topo
 
+from attrition.models.train import \
+    preprocess  # <-- Importado uma única vez no topo
 
 # --------- Fixtures e Classes de Apoio ---------
 
