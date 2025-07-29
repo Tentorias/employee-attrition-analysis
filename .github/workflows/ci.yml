@@ -52,11 +52,11 @@ jobs:
       # --- AJUSTE AQUI: Rodar pre-commit (opcional) ---
       - name: Rodar pre-commit
         run: |
-          # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas
+          # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas (boa prática)
           rm -rf ~/.cache/pre-commit
-          # Instala ou atualiza os hooks para garantir que executáveis sejam encontrados
-          poetry run pre-commit install # Instala o ambiente interno dos hooks
-          poetry run pre-commit autoupdate # Atualiza e instala as dependências dos hooks
-          poetry run pre-commit run --all-files # Executa todos os hooks
+          # Instala os hooks no ambiente do CI
+          poetry run pre-commit install --install-hooks # NOVO: Instala os executáveis dos hooks
+          # Opcional: poetry run pre-commit autoupdate # Poderia adicionar aqui se quiser manter os hooks atualizados automaticamente. Por enquanto, focamos na instalação.
+          poetry run pre-commit run --all-files --show-diff-on-failure # NOVO: Adiciona --show-diff-on-failure
         env: # pre-commit também pode precisar de PYTHONPATH
           PYTHONPATH: ${{ github.workspace }}
