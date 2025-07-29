@@ -12,47 +12,35 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10']
-      fail-fast: false
 
     steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Configurar Python ${{ matrix.python-version }}
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Instalar Poetry
-        run: |
-          pip install poetry
+      - name: Install Poetry
+        run: pip install poetry
 
-      - name: Configurar cache de dependências Poetry
+      - name: Cache Poetry
         uses: actions/cache@v4
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: ${{ runner.os }}-poetry-
 
-      - name: Instalar dependências com Poetry
-        run: |
-          poetry install --no-root
+      - name: Install deps
+        run: poetry install --no-root
 
-      - name: Executar lint (flake8)
-        run: |
-          poetry run flake8 src tests
+      - name: Lint
+        run: poetry run flake8 src tests
 
-      - name: Executar testes (pytest)
-        run: |
-          # Executa o pytest com cobertura de código
-          poetry run pytest --cov=src
-        env: # <--- ADICIONE ESTE BLOCO DE AMBIENTE
-          # Torna a DATABASE_URL disponível para os testes
+      - name: Test
+        run: poetry run pytest --cov=src
+        env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # Garante que o Python encontre os módulos dentro de 'src'
-          PYTHONPATH: ${{ github.workspace }} # O github.workspace aponta para a raiz do seu repositório
-                                            # onde a pasta 'src' está localizada.
+          PYTHONPATH: ${{ github.workspace }}/src
 
-      - name: Rodar pre-commit (opcional)
-        run: |
-          poetry run pre-commit run --all-files
+      - name: Pre‑commit
+        run: poetry run pre-commit run --all-files
