@@ -54,6 +54,9 @@ jobs:
         run: |
           # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas
           rm -rf ~/.cache/pre-commit
+          # Instala ou atualiza os hooks para garantir que executáveis sejam encontrados
+          poetry run pre-commit install # Instala o ambiente interno dos hooks
+          poetry run pre-commit autoupdate # Atualiza e instala as dependências dos hooks
           poetry run pre-commit run --all-files # Executa todos os hooks
         env: # pre-commit também pode precisar de PYTHONPATH
-          PYTHONPATH: ${{ github.workspace }} # Adicione esta linha se Flake8 estiver reclamando
+          PYTHONPATH: ${{ github.workspace }}
