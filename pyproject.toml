@@ -45,4 +45,4 @@ pre-commit = "^3.7.1"
 black = "^24.4.2"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
-pytest-cov = "^6.2.1" # <-- ADICIONE PYTEST-COV AQUI
+pytest-cov = "^6.2.1" # 
