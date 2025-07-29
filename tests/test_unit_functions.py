@@ -1,5 +1,6 @@
 # tests/test_unit_functions.py
 
+import os  # noqa: E402
 import sys
 from pathlib import Path
 
@@ -7,14 +8,17 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 
-from attrition.models.train import preprocess
-
-# --------- Fixtures e Classes de Apoio ---------
-
-
+# --- ADICIONE O BLOCO DE AJUSTE DO sys.path AQUI (APÓS IMPORTS, ANTES DE QUALQUER CÓDIGO/CLASSE) ---
 project_root = Path(__file__).resolve().parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
+# -------------------------------------------------------------------------------------------------
+
+
+# Agora, o import do seu projeto deve funcionar sem E402
+from attrition.models.train import preprocess
+
+# --------- Fixtures e Classes de Apoio ---------
 
 
 class LocalDummyModel:
@@ -92,6 +96,7 @@ def test_evaluate_model_basic():
 
     # O teste agora verifica a saída da avaliação, que é o que importa
 
+    # Correto
     report = classification_report(y_test, predictions, zero_division=0)
     cm = confusion_matrix(y_test, predictions)
 
