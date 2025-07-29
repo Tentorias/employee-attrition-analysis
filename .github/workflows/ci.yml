@@ -47,9 +47,13 @@ jobs:
           poetry run pytest --cov=src
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: ${{ github.workspace }}/src # <--- AJUSTE AQUI: Adicionar /src
-                                                # Isso fará com que o Python procure módulos dentro de 'src'
+          PYTHONPATH: ${{ github.workspace }}/src
 
-      - name: Rodar pre-commit (opcional)
+      # --- AJUSTE AQUI: Rodar pre-commit (opcional) ---
+      - name: Rodar pre-commit
         run: |
-          poetry run pre-commit run --all-files
+          # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas
+          rm -rf ~/.cache/pre-commit
+          poetry run pre-commit run --all-files # Executa todos os hooks
+        env: # pre-commit também pode precisar de PYTHONPATH
+          PYTHONPATH: ${{ github.workspace }} # Adicione esta linha se Flake8 estiver reclamando
