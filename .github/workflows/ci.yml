@@ -12,35 +12,44 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10']
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Configurar Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        run: pip install poetry
+      - name: Instalar Poetry
+        run: |
+          pip install poetry
 
-      - name: Cache Poetry
+      - name: Configurar cache de dependências Poetry
         uses: actions/cache@v4
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: ${{ runner.os }}-poetry-
 
-      - name: Install deps
-        run: poetry install --no-root
+      - name: Instalar dependências com Poetry
+        run: |
+          poetry install --no-root
 
-      - name: Lint
-        run: poetry run flake8 src tests
+      - name: Executar lint (flake8)
+        run: |
+          poetry run flake8 src tests
 
-      - name: Test
-        run: poetry run pytest --cov=src
+      - name: Executar testes (pytest)
+        run: |
+          poetry run pytest --cov=src
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: ${{ github.workspace }}/src
+          PYTHONPATH: ${{ github.workspace }}/src # <--- AJUSTE AQUI: Adicionar /src
+                                                # Isso fará com que o Python procure módulos dentro de 'src'
 
-      - name: Pre‑commit
-        run: poetry run pre-commit run --all-files
+      - name: Rodar pre-commit (opcional)
+        run: |
+          poetry run pre-commit run --all-files
