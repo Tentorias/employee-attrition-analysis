@@ -1,9 +1,13 @@
+# --- tests/test_unit_functions.py ---
+
 import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
+
+from attrition.models.train import preprocess
 
 # --- ADICIONE O BLOCO DE AJUSTE DO sys.path AQUI (APÓS IMPORTS, ANTES DE QUALQUER CÓDIGO/CLASSE) ---
 _project_root = Path(__file__).resolve().parent.parent.parent
@@ -13,12 +17,6 @@ if str(_project_root) not in sys.path:
 
 
 # --- tests/test_unit_functions.py ---
-
-
-# Agora, o import do seu projeto deve funcionar sem E402
-from attrition.models.train import preprocess
-
-# --------- Fixtures e Classes de Apoio ---------
 
 
 class LocalDummyModel:
