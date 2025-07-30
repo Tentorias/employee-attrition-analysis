@@ -1,4 +1,4 @@
-# scripts/test_architectural_integrity.py (VERSÃO FINAL CORRIGIDA)
+# scripts/test_architectural_integrity.py
 import os
 from pathlib import Path
 
@@ -80,9 +80,6 @@ def test_model_sanity():
         print(
             f"Proporção que faz horas extras no grupo de BAIXO RISCO: {hr_baixo_risco:.1%}"
         )
-        # A assertiva abaixo foi comentada pois o modelo aprendeu um padrão diferente do esperado.
-        # Isto é uma descoberta, não um erro. A informação continua sendo exibida no log.
-        # assert hr_alto_risco > hr_baixo_risco, "FALHA na verificação de sanidade (OverTime): O padrão esperado não foi encontrado."
         print("ℹ️ Verificação de sanidade (OverTime): Análise concluída.")
 
         # Verificação de Renda Mensal
@@ -111,7 +108,6 @@ def test_model_architecture():
         model = joblib.load(MODEL_PATH)
         print(f"✅ Arquivo de modelo carregado de '{MODEL_PATH}'.")
 
-        # A verificação agora é se o modelo é do tipo XGBClassifier, que é o que o train.py salva.
         assert isinstance(
             model, XGBClassifier
         ), f"O objeto do modelo não é um XGBClassifier, mas sim um {type(model)}."
@@ -123,8 +119,6 @@ def test_model_architecture():
         assert False, f"FALHA NO TESTE DE ARQUITETURA: {e}"
 
 
-# O bloco abaixo é útil para rodar este script de forma independente,
-# mas agora os testes estão escritos para o Pytest.
 if __name__ == "__main__":
     print("=============================================")
     print("INICIANDO BATERIA DE TESTES DO PROJETO")

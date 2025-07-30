@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 # --- Configurações ---
-load_dotenv()  # Carrega variáveis do .env
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "WA_Fn-UseC_-HR-Employee-Attrition.csv"
 TABLE_NAME = "employees"
 
-# Pega a URL do banco de dados do arquivo .env
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 
@@ -39,11 +39,9 @@ def seed_database():
         df = pd.read_csv(RAW_DATA_PATH)
         print(f"✔ Arquivo CSV lido com sucesso ({len(df)} linhas).")
 
-        # Converte nomes de colunas para minúsculas para evitar problemas de case no SQL
         df.columns = df.columns.str.lower()
 
         with engine.connect() as conn:
-            # Usando 'if_exists="replace"' para apagar e recriar a tabela
             df.to_sql(TABLE_NAME, conn, if_exists="replace", index=False)
             print(f"✔ Dados salvos com sucesso na tabela '{TABLE_NAME}' no PostgreSQL.")
 

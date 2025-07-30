@@ -1,4 +1,4 @@
-# tests/test_main_cli.py (VERSÃO FINAL)
+# tests/test_main_cli.py
 import os
 import subprocess
 import sys
@@ -36,7 +36,7 @@ def test_cli_run_pipeline_success(tmp_path):
     Testa o comando 'run-pipeline' de ponta a ponta, verificando se
     todos os artefatos são criados em um diretório temporário.
     """
-    # Cria um arquivo de dados brutos temporário
+
     raw_data_path = tmp_path / "raw_data.csv"
     sample_data = {
         "Attrition": ["No", "Yes"] * 20,
@@ -48,7 +48,6 @@ def test_cli_run_pipeline_success(tmp_path):
     }
     pd.DataFrame(sample_data).to_csv(raw_data_path, index=False)
 
-    # Define os caminhos de saída dos artefatos dentro do diretório temporário
     model_path = tmp_path / "model.pkl"
     features_path = tmp_path / "features.pkl"
     params_path = tmp_path / "params.json"
@@ -56,7 +55,6 @@ def test_cli_run_pipeline_success(tmp_path):
     y_test_path = tmp_path / "y_test.csv"
     prod_model_path = tmp_path / "prod_model.pkl"
 
-    # Executa o pipeline completo apontando para os arquivos temporários
     result = run_cli(
         [
             "run-pipeline",
@@ -77,7 +75,6 @@ def test_cli_run_pipeline_success(tmp_path):
         ]
     )
 
-    # Verifica se o pipeline executou com sucesso e se todos os artefatos foram criados
     assert result.returncode == 0, f"O pipeline falhou com o erro: {result.stderr}"
     assert model_path.exists()
     assert features_path.exists()

@@ -2,7 +2,7 @@
 
 import argparse
 import json
-import os  # Importar os
+import os
 
 import joblib
 import numpy as np
@@ -21,7 +21,6 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
 
         X_new = pd.DataFrame([input_data])
 
-        # As transformações aqui precisam ser as mesmas de data_processing.py e train.py!
         cols_to_drop = ["EmployeeCount", "StandardHours", "Over18"]
         X_new.drop(
             columns=[col for col in cols_to_drop if col in X_new.columns],
@@ -35,9 +34,7 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
         ):
             X_new["YearsPerCompany"] = X_new["TotalWorkingYears"] / X_new[
                 "NumCompaniesWorked"
-            ].replace(
-                0, 1
-            )  # Usar .replace(0,1)
+            ].replace(0, 1)
         if "MonthlyIncome" in X_new.columns:
             X_new["MonthlyIncome_log"] = np.log1p(X_new["MonthlyIncome"])
         if "TotalWorkingYears" in X_new.columns:
@@ -53,7 +50,6 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
         return prediction, probability
 
     except Exception as e:
-        # F541: Corrigir a f-string para ter a variável `e` dentro das chaves {}
         print(f"Ocorreu um erro na predição: {e}")
         return None, None
 
@@ -63,7 +59,6 @@ def cli_main():
     parser = argparse.ArgumentParser(
         description="Faz a predição a partir de um arquivo JSON."
     )
-    # Default paths for cli_main
     parser.add_argument(
         "--model-path",
         default=os.path.join("models", "production_model.pkl"),

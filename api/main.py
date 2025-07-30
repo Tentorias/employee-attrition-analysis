@@ -45,7 +45,6 @@ except FileNotFoundError as e:
     print(f"❌ Erro crítico ao carregar artefactos: {e}.")
     raise
 except Exception as e:
-    # F541: Corrigir a f-string para ter a variável `e` dentro das chaves {}
     print(f"❌ Erro inesperado ao carregar artefactos: {e}.")
     raise
 

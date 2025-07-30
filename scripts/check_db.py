@@ -15,7 +15,6 @@ else:
         engine = create_engine(DATABASE_URL)
         print("Conectado ao banco de dados.")
 
-        # Consulta para ver as probabilidades e as predições
         df_predictions = pd.read_sql_table("predictions", con=engine)
 
         print("\n--- Primeiras 10 Predições ---")

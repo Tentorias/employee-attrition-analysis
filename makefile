@@ -1,6 +1,5 @@
 .PHONY: setup db-seed run-pipeline batch-predict start-api start-streamlit clean test all deploy-ci-cd
 
-# Define o prefixo para executar comandos dentro do ambiente Poetry
 POETRY_RUN = poetry run
 
 # --- VARIÁVEIS COM CAMINHOS DE ARTEFATOS ---
@@ -16,9 +15,7 @@ OPTIMAL_THRESHOLD_PATH = artifacts/models/optimal_threshold.pkl
 SHAP_EXPLAINER_PATH = models/production_shap_explainer.pkl
 
 
-# --- RECEITAS PRINCIPAIS ---
 
-# Configura o ambiente Poetry
 setup:
 	@echo "Instalando dependências Poetry..."
 	$(POETRY_RUN) poetry install
@@ -26,13 +23,12 @@ setup:
 	cp .env.example .env || true
 	@echo "✅ Setup inicial concluído. Preencha seu .env com DATABASE_URL."
 
-# Popula o banco de dados com os dados brutos
+
 db-seed:
 	@echo "Semeando o banco de dados PostgreSQL com dados brutos..."
 	$(POETRY_RUN) python scripts/seed_database.py
 	@echo "✅ Banco de dados populado."
 
-# GERA E SALVA O SHAP EXPLAINER (SEPARADO PARA CLAREZA, MAS CHAMADO PELO run-pipeline)
 create-explainer:
 	@echo "Criando e salvando o SHAP Explainer..."
 	$(POETRY_RUN) python scripts/create_explainer.py \
@@ -40,27 +36,26 @@ create-explainer:
 		--output-path $(SHAP_EXPLAINER_PATH)
 	@echo "✅ SHAP Explainer criado."
 
-# Gera predições em lote usando a API e salva no banco de dados
+
 batch-predict:
 	@echo "Gerando predições em lote e salvando no banco de dados..."
 	$(POETRY_RUN) python scripts/run_batch_predictions.py
 	@echo "✅ Predições em lote concluídas e salvas no DB."
 
-# Inicia o servidor da API FastAPI
+
 start-api:
 	@echo "Iniciando a API FastAPI em http://127.0.0.1:8000..."
 	$(POETRY_RUN) uvicorn api.main:app --reload
 	@echo "✅ API iniciada."
 
-# Inicia o dashboard tático Streamlit
+
 start-streamlit:
 	@echo "Iniciando o dashboard Streamlit..."
 	$(POETRY_RUN) streamlit run app/main_app.py
 	@echo "✅ Dashboard Streamlit iniciado."
 
-# --- RECEITAS DE MANUTENÇÃO E TESTE ---
+# --- MANUTENÇÃO E TESTE ---
 
-# Limpa caches e artefatos gerados
 clean:
 	@echo "Limpando caches e artefatos..."
 	rm -rf $(MODEL_EVAL_PATH) $(PROD_MODEL_PATH) $(FEATURES_PATH) $(BEST_PARAMS_PATH) $(X_TEST_PATH) $(Y_TEST_PATH) $(OPTIMAL_THRESHOLD_PATH) $(SHAP_EXPLAINER_PATH)
@@ -68,17 +63,16 @@ clean:
 	$(POETRY_RUN) streamlit cache clear
 	@echo "✅ Limpeza concluída."
 
-# Executa os testes automatizados
+
 test:
 	@echo "Executando testes automatizados..."
 	$(POETRY_RUN) pytest tests/
 	@echo "✅ Testes concluídos."
 
-# Executa o pipeline completo (incluindo setup inicial e testes)
-# ATENÇÃO: 'create-explainer' é chamado AQUI dentro da receita run-pipeline
+
 all: setup db-seed run-pipeline batch-predict test start-streamlit
 
-# Placeholder para o deploy contínuo (CD) - será implementado no futuro
+
 deploy-ci-cd:
 	@echo "Iniciando processo de deploy contínuo (CD)..."
 	@echo "Este passo será implementado para automatizar o deploy em plataformas como Render."
@@ -87,8 +81,6 @@ deploy-ci-cd:
 	# $(POETRY_RUN) render deploy --service-id your-api-service-id
 	@echo "✅ CD placeholder concluído."
 
-# Executa o pipeline completo de ML: pré-processamento, treino, avaliação e salvamento de artefatos
-# Esta é a definição CORRETA e ÚNICA para run-pipeline
 run-pipeline: db-seed
 	@echo "Iniciando o pipeline completo de ML..."
 	$(POETRY_RUN) python src/attrition/main.py run-pipeline

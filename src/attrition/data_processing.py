@@ -54,14 +54,11 @@ def load_and_preprocess_data(model_features_list=None):
     if df.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    # --- NOVO: Forçar EmployeeNumber para int logo no início (para segurança) ---
-    # Linha 46 (este comentário estará aqui)
-    if "EmployeeNumber" in df.columns:  # Linha 47
-        df["EmployeeNumber"] = df["EmployeeNumber"].astype(int)  # Linha 48
-    # -------------------------------------------------------------------------- # Linha 49
+    if "EmployeeNumber" in df.columns:
+        df["EmployeeNumber"] = df["EmployeeNumber"].astype(int)
 
     # --- DataFrame para UI (manter colunas originais relevantes) ---
-    df_for_ui = df.copy()  # Linha 52
+    df_for_ui = df.copy()
 
     if "Attrition" in df_for_ui.columns:
         df_for_ui["Attrition"] = df_for_ui["Attrition"].map({"Yes": 1, "No": 0})
@@ -98,11 +95,9 @@ def load_and_preprocess_data(model_features_list=None):
         inplace=True,
     )
 
-    # Mapeamento de Gênero (do train.py)
     if "Gender" in df_model.columns:
         df_model["Gender"] = df_model["Gender"].map({"Male": 1, "Female": 0})
 
-    # Cálculo de YearsPerCompany (do train.py)
     if (
         "TotalWorkingYears" in df_model.columns
         and "NumCompaniesWorked" in df_model.columns
@@ -111,7 +106,6 @@ def load_and_preprocess_data(model_features_list=None):
             "NumCompaniesWorked"
         ].replace(0, 1)
 
-    # Log transforms (do train.py)
     if "MonthlyIncome" in df_model.columns:
         df_model["MonthlyIncome_log"] = np.log1p(df_model["MonthlyIncome"])
 
@@ -128,20 +122,18 @@ def load_and_preprocess_data(model_features_list=None):
 
     print("Nenhuma escalonamento numérico aplicado (consistente com train.py).")
 
-    for col in df_model.columns:  # Linha 124
-        if df_model[col].dtype == "bool":  # Linha 125
-            df_model[col] = df_model[col].astype(float)  # Linha 126
+    for col in df_model.columns:
+        if df_model[col].dtype == "bool":
+            df_model[col] = df_model[col].astype(float)
+
         # --- CORREÇÃO DE INDENTAÇÃO AQUI ---
         elif df_model[col].dtype == "int64" and col not in [
             "Attrition",
             "EmployeeNumber",
-        ]:  # Linha 127
-            if (
-                col not in df_model.select_dtypes(include=[np.number]).columns.tolist()
-            ):  # Verifica se é numérica antes de tentar converter a float
-                df_model[col] = df_model[col].astype(
-                    float
-                )  # Linha 129 - Esta linha foi corrigida de 'pass'
+        ]:
+            if col not in df_model.select_dtypes(include=[np.number]).columns.tolist():
+                df_model[col] = df_model[col].astype(float)
+
         # --- FIM DA CORREÇÃO DE INDENTAÇÃO ---
 
     if model_features_list is not None:

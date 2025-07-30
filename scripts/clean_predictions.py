@@ -20,8 +20,6 @@ def clean_duplicate_predictions():
     try:
         engine = create_engine(db_url)
 
-        # Query SQL para deletar duplicatas, mantendo a mais recente
-        # A sintaxe pode variar um pouco dependendo do SQL (PostgreSQL aqui)
         query = text(
             """
         DELETE FROM predictions

@@ -14,7 +14,6 @@ from sklearn.metrics import (
 )
 
 # --- CONFIGURAÇÕES ---
-# Define os caminhos para os artefatos, subindo para a raiz do projeto
 project_root = Path(__file__).resolve().parent.parent
 MODEL_PATH = project_root / "models" / "production_model.pkl"
 X_TEST_PATH = project_root / "artifacts" / "features" / "X_test.csv"
@@ -41,7 +40,6 @@ def check_performance():
         return
 
     # --- 2. Fazer Predições ---
-    # Usa um threshold padrão de 0.5 para avaliação objetiva
     threshold = 0.5
     y_pred_proba = model.predict_proba(X_test)[:, 1]
     y_pred = (y_pred_proba >= threshold).astype(int)

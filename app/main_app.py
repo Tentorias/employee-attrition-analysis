@@ -5,16 +5,10 @@ import joblib
 import streamlit as st
 from dotenv import load_dotenv
 
-# E402: Estes imports devem vir depois dos imports de terceiros (como Streamlit, joblib, pandas, dotenv)
-# Mas antes de qualquer código ou variável global.
 from src.attrition.data_processing import load_and_preprocess_data
 
 try:
-    from app.ui_config import (  # E402: Movido para o topo do módulo
-        LABEL_MAPPING,
-        UNACTIONABLE_FEATURES,
-        VALUE_MAPPING,
-    )
+    from app.ui_config import LABEL_MAPPING, UNACTIONABLE_FEATURES, VALUE_MAPPING
 except ImportError:
     LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES = {}, {}, []
     st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")
@@ -142,7 +136,7 @@ try:
 
 except Exception as e:
     st.error(
-        f"Erro ao calcular probabilidades de predição: {e}. "  # E501
+        f"Erro ao calcular probabilidades de predição: {e}. "
         "Verifique a compatibilidade do modelo com o DataFrame processado."
     )
     st.stop()
@@ -150,7 +144,7 @@ except Exception as e:
 # --- VERIFICAÇÃO ADICIONAL APÓS CÁLCULO ---
 if "predicted_probability" not in df_for_ui.columns:
     st.error(
-        "Coluna 'predicted_probability' não foi adicionada a df_for_ui. "  # E501
+        "Coluna 'predicted_probability' não foi adicionada a df_for_ui. "
         "Verifique o cálculo de predição."
     )
     st.stop()
@@ -162,7 +156,7 @@ if not df_for_ui["EmployeeNumber"].empty:
         st.session_state.selected_employee_id = int(df_for_ui["EmployeeNumber"].iloc[0])
 else:
     st.error(
-        "Coluna 'EmployeeNumber' vazia em df_for_ui. "  # E501
+        "Coluna 'EmployeeNumber' vazia em df_for_ui. "
         "Não é possível selecionar funcionário."
     )
     st.stop()
@@ -199,7 +193,7 @@ with tab_team:
         if st.button("Analisar Funcionário", use_container_width=True, type="primary"):
             st.session_state.selected_employee_id = int(emp_options[selected_emp_key])
             st.success(
-                f"Funcionário {st.session_state.selected_employee_id} carregado! "  # E501
+                f"Funcionário {st.session_state.selected_employee_id} carregado! "
                 "Verifique a aba de Diagnóstico."
             )
 
@@ -236,7 +230,7 @@ id_exists_in_model_df = (
 )
 st.sidebar.write(
     f"Is selected_employee_id in df_model_ready['EmployeeNumber'] values? "
-    f"{id_exists_in_model_df}"  # E501
+    f"{id_exists_in_model_df}"
 )
 
 # --- FIM DOS DEBUGGING PRINTS ---
@@ -250,7 +244,7 @@ if not filtered_df_model.empty:
     employee_data_model = filtered_df_model.iloc[0]
 else:
     st.error(
-        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "  # E501
+        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "
         "em df_model_ready para cálculo SHAP. Isso não deveria acontecer. "
         "Verifique a integridade dos dados e o pipeline de pré-processamento para EmployeeNumber."
     )
@@ -264,7 +258,7 @@ if not filtered_df_ui.empty:
     employee_data_ui = filtered_df_ui.iloc[0]
 else:
     st.error(
-        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "  # E501
+        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "
         "em df_for_ui para exibição. Verifique a integridade dos dados."
     )
     st.stop()
@@ -277,7 +271,6 @@ with tab_individual:
         "Risco Atual de Saída", f"{employee_data_ui['predicted_probability']:.1%}"
     )
 
-    # Calcula e exibe os fatores de risco SHAP
     X_emp = employee_data_model.to_frame().T
     shap_values = explainer.shap_values(X_emp)[0]
     top_factors = get_top_factors(shap_values, X_emp.columns)

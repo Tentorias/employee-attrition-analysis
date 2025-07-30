@@ -74,7 +74,6 @@ def run_causal_analysis(
     return causal_estimate, refutation_random, refutation_unobserved
 
 
-# Exemplo de uso
 if __name__ == "__main__":
     from data_processing import load_and_preprocess_data
 

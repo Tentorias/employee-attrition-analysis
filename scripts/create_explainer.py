@@ -1,5 +1,3 @@
-# scripts/create_shap_explainer.py
-
 # scripts/create_explainer.py
 
 import logging
@@ -21,7 +19,6 @@ def generate_and_save_explainer():
     """
     project_root = Path(__file__).resolve().parent.parent
 
-    # Caminhos para os artefatos necessários
     model_path = project_root / "models" / "production_model.pkl"
     x_test_path = project_root / "artifacts" / "features" / "X_test.csv"
     explainer_output_path = project_root / "models" / "production_shap_explainer.pkl"
@@ -33,7 +30,6 @@ def generate_and_save_explainer():
         logging.info(f"Carregando dados de teste de '{x_test_path}'...")
         X_test = pd.read_csv(x_test_path)
 
-        # O modelo real está dentro do pipeline
         actual_model = (
             model.named_steps["classifier"] if hasattr(model, "steps") else model
         )
