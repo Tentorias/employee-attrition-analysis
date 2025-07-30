@@ -36,7 +36,7 @@ jobs:
 
       - name: Instalar dependências com Poetry
         run: |
-          poetry install --no-root
+          poetry install --no-root 
 
       - name: Executar lint (flake8)
         run: |
@@ -46,17 +46,44 @@ jobs:
         run: |
           poetry run pytest --cov=src
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: ${{ github.workspace }}/src
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} 
+          PYTHONPATH: ${{ github.workspace }}/src 
 
-      # --- AJUSTE AQUI: Rodar pre-commit (opcional) ---
       - name: Rodar pre-commit
         run: |
-          # Limpa o cache interno do pre-commit para forçar reinstalação das ferramentas (boa prática)
           rm -rf ~/.cache/pre-commit
-          # Instala ou atualiza os hooks para garantir que executáveis sejam encontrados
-          poetry run pre-commit install --install-hooks
-          poetry run pre-commit autoupdate
-          poetry run pre-commit run --all-files --show-diff-on-failure
+          poetry run pre-commit install --install-hooks 
+          poetry run pre-commit autoupdate 
+          poetry run pre-commit run --all-files --show-diff-on-failure 
+        env: 
+          PYTHONPATH: ${{ github.workspace }} 
+
+  # NOVO JOB: Deploy para Render (API e Streamlit)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build # Este job só será executado se o job 'build' (CI) for bem-sucedido
+    if: github.ref == 'refs/heads/main' # Só faz deploy no branch 'main'
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Disparar Deploy da API no Render
+        run: |
+          # Substitua 'YOUR_API_SERVICE_ID' pelo ID real do seu serviço Render da API
+          API_SERVICE_ID="YOUR_API_SERVICE_ID" 
+          curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+               "https://api.render.com/v1/services/${API_SERVICE_ID}/deploys"
+          echo "✅ Deploy da API disparado para ${API_SERVICE_ID}"
         env:
-          PYTHONPATH: ${{ github.workspace }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Disparar Deploy do Streamlit no Render
+        run: |
+          # Substitua 'YOUR_STREAMLIT_SERVICE_ID' pelo ID real do seu serviço Render do Streamlit
+          STREAMLIT_SERVICE_ID="YOUR_STREAMLIT_SERVICE_ID" 
+          curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+               "https://api.render.com/v1/services/${STREAMLIT_SERVICE_ID}/deploys"
+          echo "✅ Deploy do Streamlit disparado para ${STREAMLIT_SERVICE_ID}"
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
