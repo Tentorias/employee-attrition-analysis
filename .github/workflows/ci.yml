@@ -51,9 +51,11 @@ jobs:
 
       - name: Executar testes (pytest)
         run: |
-          DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          echo "Debug: O tamanho da DATABASE_URL é: $(echo -n "$DATABASE_URL" | wc -c)"
-          poetry run pytest --cov=src
+            echo "Debug: O tamanho da DATABASE_URL é: $(echo -n "${{ secrets.DATABASE_URL }}" | wc -c)"
+            poetry run pytest --cov=src
+        env:
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+            PYTHONPATH: ${{ github.workspace }}/src
 
   deploy:
     runs-on: ubuntu-latest
