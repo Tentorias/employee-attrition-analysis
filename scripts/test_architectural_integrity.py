@@ -4,13 +4,12 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from xgboost import XGBClassifier
 
 # --- CONFIGURAÇÕES E CONSTANTES ---
 project_root = Path(__file__).resolve().parent.parent
-load_dotenv(project_root / ".env")
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 RAW_DATA_PATH = project_root / "data" / "raw" / "WA_Fn-UseC_-HR-Employee-Attrition.csv"
 MODEL_PATH = project_root / "models" / "production_model.pkl"
