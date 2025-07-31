@@ -10,9 +10,7 @@ from xgboost import XGBClassifier
 # --- CONFIGURAÇÕES E CONSTANTES ---
 project_root = Path(__file__).resolve().parent.parent
 
-DATABASE_URL = os.getenv(
-    DATABASE_URL="postgresql://database_attrition_user:hsLgNEb7QYfy9YK77bBjFCNDqMwAj2aa@dpg-d1l71d3e5dus73favv10-a.oregon-postgres.render.com/database_attrition"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
 RAW_DATA_PATH = project_root / "data" / "raw" / "WA_Fn-UseC_-HR-Employee-Attrition.csv"
 MODEL_PATH = project_root / "models" / "production_model.pkl"
 
