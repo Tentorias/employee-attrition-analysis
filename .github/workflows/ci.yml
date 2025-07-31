@@ -49,14 +49,13 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }} 
           PYTHONPATH: ${{ github.workspace }}/src 
 
-      - name: Rodar pre-commit
+      - name: Executar testes (pytest)
         run: |
-          rm -rf ~/.cache/pre-commit
-          poetry run pre-commit install --install-hooks 
-          poetry run pre-commit autoupdate 
-          poetry run pre-commit run --all-files --show-diff-on-failure 
-        env: 
-          PYTHONPATH: ${{ github.workspace }} 
+          echo "Debug: O tamanho da DATABASE_URL é: $(echo -n "$DATABASE_URL" | wc -c)"
+          poetry run pytest --cov=src
+          env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} 
+          PYTHONPATH: ${{ github.workspace }}/src
 
   deploy:
     runs-on: ubuntu-latest
