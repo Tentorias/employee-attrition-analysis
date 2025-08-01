@@ -39,6 +39,8 @@ patsy = "^1.0.1"
 
 
 # lista as dependências de desenvolvimento (NOVO LUGAR PARA PYTEST-COV)
+ipywidgets = "^8.1.7"
+jupyter = "^1.1.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 pre-commit = "^3.7.1"
