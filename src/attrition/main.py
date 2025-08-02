@@ -64,6 +64,12 @@ def main():
         default="artifacts/models/optimal_threshold.pkl",
         help="Caminho para salvar o threshold ótimo.",
     )
+    p.add_argument(
+        "--min-precision-target",
+        type=float,
+        default=0.60,
+        help="Precisão mínima desejada para otimizar o threshold.",
+    )
 
     args = parser.parse_args()
 
@@ -98,6 +104,7 @@ def main():
             x_test_path=args.x_test_path,
             y_test_path=args.y_test_path,
             threshold_output_path=args.threshold_output_path,
+            min_precision_target=args.min_precision_target,
         )
 
         logging.info(

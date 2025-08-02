@@ -6,6 +6,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+from imblearn.combine import SMOTEENN
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 
@@ -65,18 +66,26 @@ def main(
     X = df_raw.drop("Attrition", axis=1)
     y = df_raw["Attrition"]
 
-    logging.info("Dividindo os dados em treino e teste (para pré-processamento)...")
-    X_train, X_test, y_train, y_test = train_test_split(
+    # CORREÇÃO: DIVIDIR OS DADOS PRIMEIRO, ANTES DE QUALQUER PRÉ-PROCESSAMENTO
+    logging.info("Dividindo os dados em treino e teste...")
+    X_train_raw, X_test_raw, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
+    # Pré-processar os conjuntos de treino e teste separadamente
     logging.info("Aplicando pré-processamento...")
-    X_train_processed = preprocess(X_train)
+    X_train = preprocess(X_train_raw)
+    X_test = preprocess(X_test_raw)
+
+    # Aplicar o balanceamento apenas no conjunto de TREINO
+    logging.info("Aplicando SMOTEENN nos dados de treino...")
+    smoteenn = SMOTEENN(random_state=42)
+    X_train_resampled, y_train_resampled = smoteenn.fit_resample(X_train, y_train)
 
     if run_optuna_tuning:
         tunning.run_tuning(
-            X_train=X_train_processed,
-            y_train=y_train,
+            X_train=X_train_resampled,
+            y_train=y_train_resampled,
             n_trials=100,
             output_path=params_path,
         )
@@ -89,19 +98,30 @@ def main(
         logging.warning("Arquivo de parâmetros não encontrado. Usando XGBoost padrão.")
         best_params = {}
 
-    classifier = XGBClassifier(random_state=42, n_jobs=-1, **best_params)
+    count_neg, count_pos = y_train_resampled.value_counts()
+    scale_pos_weight_value = count_neg / count_pos
+
+    classifier = XGBClassifier(
+        random_state=42,
+        n_jobs=-1,
+        scale_pos_weight=scale_pos_weight_value,
+        **best_params,
+    )
 
     model = classifier
 
     if retrain_full_data:
-        logging.info("Modo de produção: processando e treinando com todos os dados...")
-        X_processed = preprocess(X)
-        model.fit(X_processed, y)
-    else:
-        logging.info("Modo de avaliação: treinando com dados de treino...")
-        model.fit(X_train_processed, y_train)
+        logging.info("Modo de produção: treinando com todos os dados resampleados...")
 
-    train_cols = X_train_processed.columns.tolist()
+        # CORREÇÃO: Treinar o modelo de produção em todos os dados resampleados
+        X_all_processed = preprocess(X)
+        X_all_resampled, y_all_resampled = smoteenn.fit_resample(X_all_processed, y)
+        model.fit(X_all_resampled, y_all_resampled)
+    else:
+        logging.info("Modo de avaliação: treinando com dados de treino resampleados...")
+        model.fit(X_train_resampled, y_train_resampled)
+
+    train_cols = X_train.columns.tolist()
     logging.info(f"Salvando lista de {len(train_cols)} features em {features_path}")
     ensure_dir(features_path)
     joblib.dump(train_cols, features_path)
@@ -111,12 +131,17 @@ def main(
     joblib.dump(model, model_path)
 
     if not retrain_full_data:
-        X_test_processed = preprocess(X_test).reindex(columns=train_cols, fill_value=0)
+        # AVALIAR NO CONJUNTO DE TESTE ORIGINAL
+        X_test_final = X_test.reindex(columns=train_cols, fill_value=0)
         logging.info(f"Salvando dados de teste em {x_test_out} e {y_test_out}")
         ensure_dir(x_test_out)
-        X_test_processed.to_csv(x_test_out, index=False)
+        X_test_final.to_csv(x_test_out, index=False)
         y_test.to_csv(y_test_out, index=False)
 
 
 if __name__ == "__main__":
     main()
+
+
+# poetry run python src/attrition/main.py run-pipeline --tune
+# poetry run python src/attrition/main.py run-pipeline --tune --min-precision-target 0.60

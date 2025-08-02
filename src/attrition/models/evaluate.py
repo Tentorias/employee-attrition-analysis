@@ -25,7 +25,7 @@ def find_optimal_threshold_f1_constrained_precision(
     model, X_val, y_val, min_precision_target=0.60
 ):
     """
-    Encontra o threshold que maximiza o F1-score, garantindo uma precisão mínima.
+    Encontra o threshold que maximiza o Recall, garantindo uma precisão mínima.
     """
     logger.info(
         f"Otimizando o threshold de decisão para maximizar o F1-score com Precisão mínima de {min_precision_target:.0%}..."
@@ -36,7 +36,6 @@ def find_optimal_threshold_f1_constrained_precision(
     max_f1 = -1.0
 
     results = []
-
     for threshold in np.arange(0.01, 1.00, 0.01):
         y_pred = (y_pred_proba >= threshold).astype(int)
 
@@ -105,6 +104,7 @@ def main(
     x_test_path: str,
     y_test_path: str,
     threshold_output_path: str = "artifacts/models/optimal_threshold.pkl",
+    min_precision_target: float = 0.60,
 ):
     try:
         logger.info("Iniciando a avaliação do modelo...")
@@ -113,7 +113,7 @@ def main(
         y_test = pd.read_csv(y_test_path).squeeze("columns")
 
         optimal_threshold = find_optimal_threshold_f1_constrained_precision(
-            model, X_test, y_test, min_precision_target=0.60
+            model, X_test, y_test, min_precision_target=min_precision_target
         )
 
         evaluate_with_threshold(model, X_test, y_test, optimal_threshold)
@@ -136,6 +136,12 @@ if __name__ == "__main__":
         "--threshold-output-path",
         default="artifacts/models/optimal_threshold.pkl",
         help="Caminho para salvar o threshold ótimo.",
+    )
+    parser.add_argument(
+        "--min-precision-target",
+        type=float,
+        default=0.60,
+        help="Precisão mínima desejada para otimizar o threshold.",
     )
     args = parser.parse_args()
     main(**vars(args))

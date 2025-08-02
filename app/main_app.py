@@ -1,5 +1,14 @@
+# app/main_app.py
+
 import sys
 from pathlib import Path
+
+# --- CORREÇÃO DO PATH: ISSO DEVE SER A PRIMEIRA COISA A ACONTECER ---
+project_root = Path(__file__).resolve().parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+# --- FIM DA CORREÇÃO ---
+
 
 import joblib
 import streamlit as st
@@ -13,7 +22,7 @@ except ImportError:
     LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES = {}, {}, []
     st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")
 
-# --- CONFIGURAÇÕES INICIAIS ---
+# --- O RESTO DO CÓDIGO CONTINUA AQUI ---
 
 st.set_page_config(
     page_title="Diagnóstico de Turnover",
