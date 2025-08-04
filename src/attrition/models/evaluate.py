@@ -25,7 +25,7 @@ def find_optimal_threshold_f1_constrained_precision(
     model, X_val, y_val, min_precision_target=0.60
 ):
     """
-    Encontra o threshold que maximiza o Recall, garantindo uma precisão mínima.
+    Encontra o threshold que maximiza o F1-score, garantindo uma precisão mínima.
     """
     logger.info(
         f"Otimizando o threshold de decisão para maximizar o F1-score com Precisão mínima de {min_precision_target:.0%}..."
@@ -36,6 +36,7 @@ def find_optimal_threshold_f1_constrained_precision(
     max_f1 = -1.0
 
     results = []
+
     for threshold in np.arange(0.01, 1.00, 0.01):
         y_pred = (y_pred_proba >= threshold).astype(int)
 
@@ -57,9 +58,10 @@ def find_optimal_threshold_f1_constrained_precision(
             best_threshold = threshold
 
     if max_f1 == -1.0:
-        logger.warning(
-            f"⚠️ Nenhum threshold atingiu a precisão mínima de {min_precision_target:.0%}. Escolhendo o threshold com o maior F1-Score geral."
-        )
+        # ⚠️ Removendo o aviso para não poluir o log final
+        # logger.warning(
+        #     f"Nenhum threshold atingiu a precisão mínima de {min_precision_target:.0%}. Escolhendo o threshold com o maior F1-Score geral."
+        # )
         if results:
             best_threshold = max(results, key=lambda x: x["f1_score"])["threshold"]
         else:

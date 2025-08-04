@@ -1,4 +1,4 @@
-.PHONY: setup db-seed run-pipeline batch-predict start-api start-streamlit clean test all deploy-ci-cd
+.PHONY: setup db-seed run-pipeline batch-predict start-api start-streamlit create-explainer clean test all deploy-ci-cd
 
 POETRY_RUN = poetry run
 
@@ -15,7 +15,6 @@ OPTIMAL_THRESHOLD_PATH = artifacts/models/optimal_threshold.pkl
 SHAP_EXPLAINER_PATH = models/production_shap_explainer.pkl
 
 
-
 setup:
 	@echo "Instalando dependências Poetry..."
 	$(POETRY_RUN) poetry install
@@ -26,7 +25,7 @@ setup:
 
 db-seed:
 	@echo "Semeando o banco de dados PostgreSQL com dados brutos..."
-	$(POETRY_RUN) python scripts/seed_database.py
+	$(POETRY_RUN) python scripts/migrate_to_postgres.py
 	@echo "✅ Banco de dados populado."
 
 create-explainer:
@@ -85,6 +84,15 @@ run-pipeline: db-seed
 	@echo "Iniciando o pipeline completo de ML..."
 	$(POETRY_RUN) python src/attrition/main.py run-pipeline
 	@echo "✅ Pipeline de ML concluído."
+
+	# NOVO: Gerar o SHAP Explainer após o pipeline de ML
+	$(MAKE) create-explainer # Chama a receita create-explainer
+	@echo "✅ SHAP Explainer gerado e salvo."
+
+run-pipeline-tune:
+	@echo "Iniciando o pipeline completo de ML com otimização (Optuna)..."
+	$(POETRY_RUN) python src/attrition/main.py run-pipeline --tune
+	@echo "✅ Pipeline de ML (com otimização) concluído."
 
 	# NOVO: Gerar o SHAP Explainer após o pipeline de ML
 	$(MAKE) create-explainer # Chama a receita create-explainer

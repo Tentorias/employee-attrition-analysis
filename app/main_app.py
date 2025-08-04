@@ -3,12 +3,9 @@
 import sys
 from pathlib import Path
 
-# --- CORREÇÃO DO PATH: ISSO DEVE SER A PRIMEIRA COISA A ACONTECER ---
 project_root = Path(__file__).resolve().parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
-# --- FIM DA CORREÇÃO ---
-
 
 import joblib
 import streamlit as st
@@ -22,7 +19,6 @@ except ImportError:
     LABEL_MAPPING, VALUE_MAPPING, UNACTIONABLE_FEATURES = {}, {}, []
     st.warning("Arquivo ui_config.py não encontrado. Usando configurações padrão.")
 
-# --- O RESTO DO CÓDIGO CONTINUA AQUI ---
 
 st.set_page_config(
     page_title="Diagnóstico de Turnover",
@@ -102,7 +98,7 @@ if not all([model, model_features, explainer]):
     st.stop()
 
 
-# --- NOVO CARREGAMENTO DE DADOS PRÉ-PROCESSADOS, RETORNANDO DOIS DFS ---
+# --- DADOS PRÉ-PROCESSADOS, RETORNANDO DOIS DFS ---
 @st.cache_data(ttl=3600)
 def get_preprocessed_employee_data_and_ui(features_list_from_model):
     """Carrega e pré-processa os dados, retornando DF para modelo e DF para UI."""
@@ -113,18 +109,18 @@ df_model_ready, df_for_ui = get_preprocessed_employee_data_and_ui(model_features
 
 if df_model_ready.empty or df_for_ui.empty:
     st.error(
-        "Erro ao carregar ou pré-processar os dados. "  # E501
+        "Erro ao carregar ou pré-processar os dados. "
         "Verifique a conexão com o banco ou o caminho do CSV."
     )
     st.stop()
 
-# --- AJUSTE: CONVERTER EMPLOYEE_NUMBER PARA INT EM AMBOS OS DFS E VERIFICAR COLUNA ---
+# --- CONVERTER EMPLOYEE_NUMBER PARA INT EM AMBOS OS DFS E VERIFICAR COLUNA ---
 if (
     "EmployeeNumber" not in df_model_ready.columns
     or "EmployeeNumber" not in df_for_ui.columns
 ):
     st.error(
-        "Coluna 'EmployeeNumber' não encontrada em um dos DataFrames "  # E501
+        "Coluna 'EmployeeNumber' não encontrada em um dos DataFrames "
         "após pré-processamento. Verifique data_processing.py."
     )
     st.stop()
@@ -301,8 +297,8 @@ with tab_individual:
     st.subheader("💡 Recomendações de Ação de RH")
     recommendations = []
 
-    causal_effect_overtime = 0.19659863945578232
-    causal_effect_satisfaction = -0.0231292925170068027
+    causal_effect_overtime = 0.29
+    causal_effect_satisfaction = -0.02
 
     if "OverTime_Yes" in employee_data_ui and employee_data_ui["OverTime_Yes"] == 1:
         recommendations.append(

@@ -40,6 +40,21 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
         df_proc["MonthlyIncome_log"] = np.log1p(df_proc["MonthlyIncome"])
     if "TotalWorkingYears" in df_proc.columns:
         df_proc["TotalWorkingYears_log"] = np.log1p(df_proc["TotalWorkingYears"])
+
+    # --: Feature Engineering  ---
+    if "MonthlyIncome" in df_proc.columns and "YearsAtCompany" in df_proc.columns:
+        df_proc["Income_Longevity_Interaction"] = (
+            df_proc["MonthlyIncome"] * df_proc["YearsAtCompany"]
+        )
+
+    if (
+        "YearsSinceLastPromotion" in df_proc.columns
+        and "YearsWithCurrManager" in df_proc.columns
+    ):
+        df_proc["Stagnation_Index"] = df_proc["YearsSinceLastPromotion"] / df_proc[
+            "YearsWithCurrManager"
+        ].replace(0, 1)
+
     cat_cols = df_proc.select_dtypes(include=["object"]).columns.tolist()
     if cat_cols:
         df_proc = pd.get_dummies(
@@ -66,18 +81,16 @@ def main(
     X = df_raw.drop("Attrition", axis=1)
     y = df_raw["Attrition"]
 
-    # CORREÇÃO: DIVIDIR OS DADOS PRIMEIRO, ANTES DE QUALQUER PRÉ-PROCESSAMENTO
+    # DIVIDIR OS DADOS PRIMEIRO, ANTES DE QUALQUER PRÉ-PROCESSAMENTO
     logging.info("Dividindo os dados em treino e teste...")
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Pré-processar os conjuntos de treino e teste separadamente
     logging.info("Aplicando pré-processamento...")
     X_train = preprocess(X_train_raw)
-    X_test = preprocess(X_test_raw)
+    X_test = preprocess(X_test_raw).reindex(columns=X_train.columns, fill_value=0)
 
-    # Aplicar o balanceamento apenas no conjunto de TREINO
     logging.info("Aplicando SMOTEENN nos dados de treino...")
     smoteenn = SMOTEENN(random_state=42)
     X_train_resampled, y_train_resampled = smoteenn.fit_resample(X_train, y_train)
@@ -98,7 +111,11 @@ def main(
         logging.warning("Arquivo de parâmetros não encontrado. Usando XGBoost padrão.")
         best_params = {}
 
-    count_neg, count_pos = y_train_resampled.value_counts()
+    count_neg, count_pos = y_train_resampled.value_counts().to_dict().get(
+        0, 0
+    ), y_train_resampled.value_counts().to_dict().get(
+        1, 1
+    )  # Adicionado .to_dict() para ser robusto
     scale_pos_weight_value = count_neg / count_pos
 
     classifier = XGBClassifier(
@@ -113,9 +130,22 @@ def main(
     if retrain_full_data:
         logging.info("Modo de produção: treinando com todos os dados resampleados...")
 
-        # CORREÇÃO: Treinar o modelo de produção em todos os dados resampleados
         X_all_processed = preprocess(X)
         X_all_resampled, y_all_resampled = smoteenn.fit_resample(X_all_processed, y)
+
+        count_neg_all, count_pos_all = y_all_resampled.value_counts().to_dict().get(
+            0, 0
+        ), y_all_resampled.value_counts().to_dict().get(
+            1, 1
+        )  # Nova contagem para produção
+        scale_pos_weight_all = count_neg_all / count_pos_all
+
+        model = XGBClassifier(
+            random_state=42,
+            n_jobs=-1,
+            scale_pos_weight=scale_pos_weight_all,
+            **best_params,
+        )
         model.fit(X_all_resampled, y_all_resampled)
     else:
         logging.info("Modo de avaliação: treinando com dados de treino resampleados...")
@@ -131,7 +161,6 @@ def main(
     joblib.dump(model, model_path)
 
     if not retrain_full_data:
-        # AVALIAR NO CONJUNTO DE TESTE ORIGINAL
         X_test_final = X_test.reindex(columns=train_cols, fill_value=0)
         logging.info(f"Salvando dados de teste em {x_test_out} e {y_test_out}")
         ensure_dir(x_test_out)
@@ -141,7 +170,3 @@ def main(
 
 if __name__ == "__main__":
     main()
-
-
-# poetry run python src/attrition/main.py run-pipeline --tune
-# poetry run python src/attrition/main.py run-pipeline --tune --min-precision-target 0.60
