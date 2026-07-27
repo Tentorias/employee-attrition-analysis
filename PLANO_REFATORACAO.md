@@ -6,8 +6,8 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ## 🗺️ Status Geral das Tarefas
 
-- [ ] **Etapa 1:** Centralizar o Pré-Processamento (Single Source of Truth)
-- [ ] **Etapa 2:** Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
+- [x] **Etapa 1:** Centralizar o Pré-Processamento (Single Source of Truth)
+- [x] **Etapa 2:** Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
 - [ ] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
 - [ ] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
 - [ ] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
@@ -17,24 +17,24 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ## 🛠️ Detalhamento por Etapa
 
-### [ ] Etapa 1: Centralizar o Pré-Processamento (Single Source of Truth)
-- [ ] Criar o módulo `src/attrition/features.py` com a função `preprocess_employee_data(df: pd.DataFrame, is_training: bool = False) -> pd.DataFrame`.
-- [ ] Incluir em `preprocess_employee_data`:
+### [x] Etapa 1: Centralizar o Pré-Processamento (Single Source of Truth)
+- [x] Criar o módulo `src/attrition/features.py` com a função `preprocess_employee_data(df: pd.DataFrame, is_training: bool = False) -> pd.DataFrame`.
+- [x] Incluir em `preprocess_employee_data`:
   - Remoção consistente de colunas não preditivas (`EmployeeCount`, `Over18`, `StandardHours` e `EmployeeNumber` na modelagem).
   - Mapeamento numérico (`Gender`).
   - Criação de `YearsPerCompany`, `MonthlyIncome_log` e `TotalWorkingYears_log`.
   - Criação das features interativas (`Income_Longevity_Interaction` e `Stagnation_Index`).
   - One-Hot Encoding (`pd.get_dummies`) consistente.
-- [ ] Refatorar `src/attrition/models/train.py` para usar `preprocess_employee_data`.
-- [ ] Refatorar `src/attrition/data_processing.py` para usar `preprocess_employee_data` ao gerar `df_model`.
-- [ ] Refatorar `api/main.py` (endpoint `/predict`) para usar `preprocess_employee_data`.
-- [ ] Refatorar `src/attrition/models/predict.py` (CLI) para usar `preprocess_employee_data`.
+- [x] Refatorar `src/attrition/models/train.py` para usar `preprocess_employee_data`.
+- [x] Refatorar `src/attrition/data_processing.py` para usar `preprocess_employee_data` ao gerar `df_model`.
+- [x] Refatorar `api/main.py` (endpoint `/predict`) para usar `preprocess_employee_data`.
+- [x] Refatorar `src/attrition/models/predict.py` (CLI) para usar `preprocess_employee_data`.
 
 ---
 
-### [ ] Etapa 2: Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
-- [ ] Em `train.py`, garantir que a coluna `EmployeeNumber` seja excluída explicitamente de `X` antes do fit do XGBoost e da validação cruzada.
-- [ ] Verificar que o `features.pkl` salvo não contenha `EmployeeNumber`.
+### [x] Etapa 2: Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
+- [x] Em `train.py`, garantir que a coluna `EmployeeNumber` seja excluída explicitamente de `X` antes do fit do XGBoost e da validação cruzada.
+- [x] Verificar que o `features.pkl` salvo não contenha `EmployeeNumber`.
 
 ---
 
