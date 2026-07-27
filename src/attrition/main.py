@@ -58,6 +58,11 @@ def main():
         default="models/production_model.pkl",
         help="Caminho para salvar modelo de produção.",
     )
+    p.add_argument(
+        "--explainer-path",
+        default="models/production_shap_explainer.pkl",
+        help="Caminho para salvar o explicador SHAP.",
+    )
     p.add_argument("--tune", action="store_true", help="Ativa a otimização com Optuna.")
     p.add_argument(
         "--threshold-output-path",
@@ -85,7 +90,7 @@ def main():
         os.makedirs(os.path.dirname(args.threshold_output_path), exist_ok=True)
 
         logging.info(
-            "\n[ETAPA 1/3] Processando dados e treinando modelo de avaliação..."
+            "\n[ETAPA 1/4] Processando dados e treinando modelo de avaliação..."
         )
         train.main(
             raw_data_path=args.raw_data_path,
@@ -98,7 +103,7 @@ def main():
             run_optuna_tuning=args.tune,
         )
 
-        logging.info("\n[ETAPA 2/3] Avaliando o modelo treinado...")
+        logging.info("\n[ETAPA 2/4] Avaliando o modelo treinado...")
         evaluate.main(
             model_path=args.model_path,
             x_test_path=args.x_test_path,
@@ -108,7 +113,7 @@ def main():
         )
 
         logging.info(
-            "\n[ETAPA 3/3] Retreinando o modelo com todos os dados para produção..."
+            "\n[ETAPA 3/4] Retreinando o modelo com todos os dados para produção..."
         )
         train.main(
             raw_data_path=args.raw_data_path,
@@ -120,6 +125,23 @@ def main():
             retrain_full_data=True,
             run_optuna_tuning=False,
         )
+
+        logging.info(
+            "\n[ETAPA 4/4] Gerando e salvando o Explicador SHAP de produção..."
+        )
+        try:
+            import shap
+            import joblib
+            model = joblib.load(args.prod_model_path)
+            actual_model = (
+                model.named_steps["classifier"] if hasattr(model, "steps") else model
+            )
+            explainer = shap.TreeExplainer(actual_model)
+            ensure_dir(args.explainer_path)
+            joblib.dump(explainer, args.explainer_path)
+            logging.info(f"✅ Explicador SHAP salvo com sucesso em: {args.explainer_path}")
+        except Exception as e:
+            logging.warning(f"⚠️ Não foi possível salvar o Explicador SHAP: {e}")
 
         logging.info("\n--- ✅ PIPELINE COMPLETO EXECUTADO COM SUCESSO! ---")
 
