@@ -8,11 +8,13 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+from attrition.features import preprocess_employee_data
+
 
 def load_and_preprocess_data(model_features_list=None):
     """
     Carrega os dados dos funcionários e aplica transformações IDÊNTICAS
-    ao preprocess de train.py para compatibilidade com o modelo treinado.
+    ao preprocess centralizado para compatibilidade com o modelo treinado.
     Retorna dois DataFrames: um para o modelo de ML e outro para exibição no UI.
 
     Args:
@@ -85,59 +87,10 @@ def load_and_preprocess_data(model_features_list=None):
     ]
     df_for_ui = df_for_ui[[col for col in ui_cols if col in df_for_ui.columns]].copy()
 
-    # --- DataFrame para o Modelo de ML (Aplicar transformações IDÊNTICAS ao train.py/preprocess) ---
-    df_model = df.copy()
-
-    cols_to_drop_if_present = ["EmployeeCount", "StandardHours", "Over18"]
-    df_model.drop(
-        columns=[col for col in cols_to_drop_if_present if col in df_model.columns],
-        errors="ignore",
-        inplace=True,
-    )
-
-    if "Gender" in df_model.columns:
-        df_model["Gender"] = df_model["Gender"].map({"Male": 1, "Female": 0})
-
-    if (
-        "TotalWorkingYears" in df_model.columns
-        and "NumCompaniesWorked" in df_model.columns
-    ):
-        df_model["YearsPerCompany"] = df_model["TotalWorkingYears"] / df_model[
-            "NumCompaniesWorked"
-        ].replace(0, 1)
-
-    if "MonthlyIncome" in df_model.columns:
-        df_model["MonthlyIncome_log"] = np.log1p(df_model["MonthlyIncome"])
-
-    if "TotalWorkingYears" in df_model.columns:
-        df_model["TotalWorkingYears_log"] = np.log1p(df_model["TotalWorkingYears"])
-
-    categorical_cols_for_ohe = df_model.select_dtypes(
-        include=["object"]
-    ).columns.tolist()
-    if categorical_cols_for_ohe:
-        df_model = pd.get_dummies(
-            df_model, columns=categorical_cols_for_ohe, drop_first=True, dtype=float
-        )
-
-    print("Nenhuma escalonamento numérico aplicado (consistente com train.py).")
-
-    for col in df_model.columns:
-        if df_model[col].dtype == "bool":
-            df_model[col] = df_model[col].astype(float)
-
-        # --- CORREÇÃO DE INDENTAÇÃO AQUI ---
-        elif df_model[col].dtype == "int64" and col not in [
-            "Attrition",
-            "EmployeeNumber",
-        ]:
-            if col not in df_model.select_dtypes(include=[np.number]).columns.tolist():
-                df_model[col] = df_model[col].astype(float)
-
-        # --- FIM DA CORREÇÃO DE INDENTAÇÃO ---
+    # --- DataFrame para o Modelo de ML (Aplicar preprocess_employee_data centralizado) ---
+    df_model = preprocess_employee_data(df, model_features=model_features_list)
 
     if model_features_list is not None:
-        df_model = df_model.reindex(columns=model_features_list, fill_value=0.0)
         print("DataFrame reindexado para corresponder às features do modelo.")
 
     return df_model, df_for_ui

@@ -7,6 +7,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+from attrition.features import preprocess_employee_data
 
 
 def main(model_path: str, threshold_path: str, features_path: str, input_data: dict):
@@ -21,28 +22,7 @@ def main(model_path: str, threshold_path: str, features_path: str, input_data: d
 
         X_new = pd.DataFrame([input_data])
 
-        cols_to_drop = ["EmployeeCount", "StandardHours", "Over18"]
-        X_new.drop(
-            columns=[col for col in cols_to_drop if col in X_new.columns],
-            errors="ignore",
-            inplace=True,
-        )
-
-        if (
-            "TotalWorkingYears" in X_new.columns
-            and "NumCompaniesWorked" in X_new.columns
-        ):
-            X_new["YearsPerCompany"] = X_new["TotalWorkingYears"] / X_new[
-                "NumCompaniesWorked"
-            ].replace(0, 1)
-        if "MonthlyIncome" in X_new.columns:
-            X_new["MonthlyIncome_log"] = np.log1p(X_new["MonthlyIncome"])
-        if "TotalWorkingYears" in X_new.columns:
-            X_new["TotalWorkingYears_log"] = np.log1p(X_new["TotalWorkingYears"])
-
-        X_new_encoded = pd.get_dummies(X_new, drop_first=True, dtype=float)
-
-        X_new_aligned = X_new_encoded.reindex(columns=feature_names, fill_value=0.0)
+        X_new_aligned = preprocess_employee_data(X_new, model_features=feature_names)
 
         probability = model.predict_proba(X_new_aligned)[:, 1][0]
         prediction = int((probability >= threshold).astype(int))

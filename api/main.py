@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
 
 from .schemas import EmployeeData, PredictionOut
+from attrition.features import preprocess_employee_data
 
 # --- Carregar variáveis de ambiente ---
 load_dotenv()
@@ -61,39 +62,8 @@ async def predict(employee_data: EmployeeData):
     try:
         input_df = pd.DataFrame([employee_data.dict()])
 
-        # --- PRÉ-PROCESSAMENTO IDÊNTICO AO TRAIN.PY/PREPROCESS ---
-        cols_to_drop = ["EmployeeCount", "StandardHours", "Over18"]
-        input_df.drop(
-            columns=[col for col in cols_to_drop if col in input_df.columns],
-            errors="ignore",
-            inplace=True,
-        )
-
-        if "Gender" in input_df.columns:
-            input_df["Gender"] = input_df["Gender"].map({"Male": 1, "Female": 0})
-
-        if (
-            "TotalWorkingYears" in input_df.columns
-            and "NumCompaniesWorked" in input_df.columns
-        ):
-            input_df["YearsPerCompany"] = input_df["TotalWorkingYears"] / input_df[
-                "NumCompaniesWorked"
-            ].replace(0, 1)
-
-        if "MonthlyIncome" in input_df.columns:
-            input_df["MonthlyIncome_log"] = np.log1p(input_df["MonthlyIncome"])
-
-        if "TotalWorkingYears" in input_df.columns:
-            input_df["TotalWorkingYears_log"] = np.log1p(input_df["TotalWorkingYears"])
-
-        categorical_cols = input_df.select_dtypes(include=["object"]).columns.tolist()
-        if categorical_cols:
-            input_df = pd.get_dummies(
-                input_df, columns=categorical_cols, drop_first=True, dtype=float
-            )
-        # --- FIM DO PRÉ-PROCESSAMENTO ---
-
-        final_df = input_df.reindex(columns=model_features, fill_value=0.0)
+        # --- PRÉ-PROCESSAMENTO CENTRALIZADO ---
+        final_df = preprocess_employee_data(input_df, model_features=model_features)
 
         actual_model = (
             model.named_steps["classifier"] if hasattr(model, "steps") else model

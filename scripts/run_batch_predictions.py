@@ -6,7 +6,7 @@ import time
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from tqdm import tqdm
 
 
@@ -33,8 +33,8 @@ def run_batch_predictions():
         return
 
     try:
-        with engine.connect() as conn:
-            conn.execute(requests.text("TRUNCATE TABLE predictions RESTART IDENTITY;"))
+        with engine.begin() as conn:
+            conn.execute(text("TRUNCATE TABLE predictions RESTART IDENTITY;"))
             print("🧹 Tabela 'predictions' limpa com sucesso.")
     except Exception:
         print(

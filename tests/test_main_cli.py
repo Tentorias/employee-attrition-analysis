@@ -39,6 +39,7 @@ def test_cli_run_pipeline_success(tmp_path):
 
     raw_data_path = tmp_path / "raw_data.csv"
     sample_data = {
+        "EmployeeNumber": range(101, 141),
         "Attrition": ["No", "Yes"] * 20,
         "Gender": ["Male", "Female"] * 20,
         "TotalWorkingYears": range(40),

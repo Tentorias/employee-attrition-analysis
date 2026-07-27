@@ -30,7 +30,7 @@ db-seed:
 
 create-explainer:
 	@echo "Criando e salvando o SHAP Explainer..."
-	$(POETRY_RUN) python scripts/create_explainer.py \
+	$(POETRY_RUN) python scripts/create_shap_explainer.py \
 		--model-path $(PROD_MODEL_PATH) \
 		--output-path $(SHAP_EXPLAINER_PATH)
 	@echo "✅ SHAP Explainer criado."

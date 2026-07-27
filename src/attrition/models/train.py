@@ -10,9 +10,13 @@ from imblearn.combine import SMOTEENN
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 
+from attrition.features import preprocess_employee_data
 from . import tunning
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+# Alias para manter compatibilidade com scripts/testes que possam importar preprocess daqui
+preprocess = preprocess_employee_data
 
 
 def ensure_dir(file_path):
@@ -20,47 +24,6 @@ def ensure_dir(file_path):
     directory = os.path.dirname(file_path)
     if directory and not os.path.exists(directory):
         os.makedirs(directory)
-
-
-def preprocess(df: pd.DataFrame) -> pd.DataFrame:
-    df_proc = df.copy()
-    df_proc = df_proc.drop(
-        columns=["EmployeeCount", "Over18", "StandardHours"], errors="ignore"
-    )
-    if "Gender" in df_proc.columns:
-        df_proc["Gender"] = df_proc["Gender"].map({"Male": 1, "Female": 0})
-    if (
-        "TotalWorkingYears" in df_proc.columns
-        and "NumCompaniesWorked" in df_proc.columns
-    ):
-        df_proc["YearsPerCompany"] = df_proc["TotalWorkingYears"] / df_proc[
-            "NumCompaniesWorked"
-        ].replace(0, 1)
-    if "MonthlyIncome" in df_proc.columns:
-        df_proc["MonthlyIncome_log"] = np.log1p(df_proc["MonthlyIncome"])
-    if "TotalWorkingYears" in df_proc.columns:
-        df_proc["TotalWorkingYears_log"] = np.log1p(df_proc["TotalWorkingYears"])
-
-    # --: Feature Engineering  ---
-    if "MonthlyIncome" in df_proc.columns and "YearsAtCompany" in df_proc.columns:
-        df_proc["Income_Longevity_Interaction"] = (
-            df_proc["MonthlyIncome"] * df_proc["YearsAtCompany"]
-        )
-
-    if (
-        "YearsSinceLastPromotion" in df_proc.columns
-        and "YearsWithCurrManager" in df_proc.columns
-    ):
-        df_proc["Stagnation_Index"] = df_proc["YearsSinceLastPromotion"] / df_proc[
-            "YearsWithCurrManager"
-        ].replace(0, 1)
-
-    cat_cols = df_proc.select_dtypes(include=["object"]).columns.tolist()
-    if cat_cols:
-        df_proc = pd.get_dummies(
-            df_proc, columns=cat_cols, drop_first=True, dtype=float
-        )
-    return df_proc
 
 
 def main(
@@ -78,7 +41,8 @@ def main(
     df_raw = pd.read_csv(raw_data_path)
     df_raw["Attrition"] = df_raw["Attrition"].map({"Yes": 1, "No": 0})
 
-    X = df_raw.drop("Attrition", axis=1)
+    # Evita Data Leakage e ID Leakage removendo Attrition e EmployeeNumber de X
+    X = df_raw.drop(columns=["Attrition", "EmployeeNumber"], errors="ignore")
     y = df_raw["Attrition"]
 
     # DIVIDIR OS DADOS PRIMEIRO, ANTES DE QUALQUER PRÉ-PROCESSAMENTO
@@ -87,9 +51,11 @@ def main(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    logging.info("Aplicando pré-processamento...")
-    X_train = preprocess(X_train_raw)
-    X_test = preprocess(X_test_raw).reindex(columns=X_train.columns, fill_value=0)
+    logging.info("Aplicando pré-processamento centralizado...")
+    X_train = preprocess_employee_data(X_train_raw)
+    X_test = preprocess_employee_data(
+        X_test_raw, model_features=X_train.columns.tolist()
+    )
 
     logging.info("Aplicando SMOTEENN nos dados de treino...")
     smoteenn = SMOTEENN(random_state=42)
@@ -97,8 +63,8 @@ def main(
 
     if run_optuna_tuning:
         tunning.run_tuning(
-            X_train=X_train_resampled,
-            y_train=y_train_resampled,
+            X_train=X_train,
+            y_train=y_train,
             n_trials=100,
             output_path=params_path,
         )
@@ -111,11 +77,10 @@ def main(
         logging.warning("Arquivo de parâmetros não encontrado. Usando XGBoost padrão.")
         best_params = {}
 
-    count_neg, count_pos = y_train_resampled.value_counts().to_dict().get(
-        0, 0
-    ), y_train_resampled.value_counts().to_dict().get(
-        1, 1
-    )  # Adicionado .to_dict() para ser robusto
+    count_neg, count_pos = (
+        y_train_resampled.value_counts().to_dict().get(0, 0),
+        y_train_resampled.value_counts().to_dict().get(1, 1),
+    )
     scale_pos_weight_value = count_neg / count_pos
 
     classifier = XGBClassifier(
@@ -130,14 +95,13 @@ def main(
     if retrain_full_data:
         logging.info("Modo de produção: treinando com todos os dados resampleados...")
 
-        X_all_processed = preprocess(X)
+        X_all_processed = preprocess_employee_data(X)
         X_all_resampled, y_all_resampled = smoteenn.fit_resample(X_all_processed, y)
 
-        count_neg_all, count_pos_all = y_all_resampled.value_counts().to_dict().get(
-            0, 0
-        ), y_all_resampled.value_counts().to_dict().get(
-            1, 1
-        )  # Nova contagem para produção
+        count_neg_all, count_pos_all = (
+            y_all_resampled.value_counts().to_dict().get(0, 0),
+            y_all_resampled.value_counts().to_dict().get(1, 1),
+        )
         scale_pos_weight_all = count_neg_all / count_pos_all
 
         model = XGBClassifier(
@@ -161,10 +125,9 @@ def main(
     joblib.dump(model, model_path)
 
     if not retrain_full_data:
-        X_test_final = X_test.reindex(columns=train_cols, fill_value=0)
         logging.info(f"Salvando dados de teste em {x_test_out} e {y_test_out}")
         ensure_dir(x_test_out)
-        X_test_final.to_csv(x_test_out, index=False)
+        X_test.to_csv(x_test_out, index=False)
         y_test.to_csv(y_test_out, index=False)
 
 
