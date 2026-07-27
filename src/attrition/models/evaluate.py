@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def find_optimal_threshold_f1_constrained_precision(
-    model, X_val, y_val, min_precision_target=0.60
+    model,
+    X_val,
+    y_val,
+    min_precision_target=0.60,
+    threshold_output_path="artifacts/models/optimal_threshold.pkl",
 ):
     """
     Encontra o threshold que maximiza o F1-score, garantindo uma precisão mínima.
@@ -76,7 +80,6 @@ def find_optimal_threshold_f1_constrained_precision(
         f"✅ Threshold ótimo encontrado: {best_threshold:.2f} (Precisão: {final_precision:.2f}, Recall: {final_recall:.2f}, F1-Score: {final_f1:.2f})"
     )
 
-    threshold_output_path = "artifacts/models/optimal_threshold.pkl"
     os.makedirs(os.path.dirname(threshold_output_path), exist_ok=True)
     joblib.dump(best_threshold, threshold_output_path)
     logger.info(f"✅ Threshold ótimo salvo em: {threshold_output_path}")
@@ -115,7 +118,11 @@ def main(
         y_test = pd.read_csv(y_test_path).squeeze("columns")
 
         optimal_threshold = find_optimal_threshold_f1_constrained_precision(
-            model, X_test, y_test, min_precision_target=min_precision_target
+            model,
+            X_test,
+            y_test,
+            min_precision_target=min_precision_target,
+            threshold_output_path=threshold_output_path,
         )
 
         evaluate_with_threshold(model, X_test, y_test, optimal_threshold)

@@ -55,6 +55,8 @@ def test_cli_run_pipeline_success(tmp_path):
     x_test_path = tmp_path / "X_test.csv"
     y_test_path = tmp_path / "y_test.csv"
     prod_model_path = tmp_path / "prod_model.pkl"
+    explainer_path = tmp_path / "explainer.pkl"
+    threshold_output_path = tmp_path / "threshold.pkl"
 
     result = run_cli(
         [
@@ -73,6 +75,10 @@ def test_cli_run_pipeline_success(tmp_path):
             str(y_test_path),
             "--prod-model-path",
             str(prod_model_path),
+            "--explainer-path",
+            str(explainer_path),
+            "--threshold-output-path",
+            str(threshold_output_path),
         ]
     )
 
@@ -82,3 +88,5 @@ def test_cli_run_pipeline_success(tmp_path):
     assert x_test_path.exists()
     assert y_test_path.exists()
     assert prod_model_path.exists()
+    assert explainer_path.exists()
+    assert threshold_output_path.exists()
