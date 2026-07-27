@@ -9,7 +9,7 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 - [x] **Etapa 1:** Centralizar o Pré-Processamento (Single Source of Truth)
 - [x] **Etapa 2:** Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
 - [x] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
-- [ ] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
+- [x] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
 - [ ] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
 - [ ] **Etapa 6:** Validar Todos os Testes Automatizados e Integridade
 
@@ -52,8 +52,8 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ---
 
-### [ ] Etapa 4: Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
-- [ ] Em `scripts/run_batch_predictions.py` (Linha 37):
+### [x] Etapa 4: Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
+- [x] Em `scripts/run_batch_predictions.py` (Linha 37):
   - Substituir `requests.text(...)` por `sqlalchemy.text("TRUNCATE TABLE predictions RESTART IDENTITY;")`.
   - Adicionar `from sqlalchemy import text` nos imports.
 
