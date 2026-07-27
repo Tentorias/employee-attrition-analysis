@@ -10,7 +10,7 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 - [x] **Etapa 2:** Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
 - [x] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
 - [x] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
-- [ ] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
+- [x] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
 - [ ] **Etapa 6:** Validar Todos os Testes Automatizados e Integridade
 
 ---
@@ -59,11 +59,11 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ---
 
-### [ ] Etapa 5: Limpar Duplicações e Ajustar Automação
-- [ ] Deletar o script redundante `scripts/seed_database.py` que causava divergência em minúsculas/maiúsculas.
-- [ ] Atualizar o `makefile`:
+### [x] Etapa 5: Limpar Duplicações e Ajustar Automação
+- [x] Deletar o script redundante `scripts/seed_database.py` que causava divergência em minúsculas/maiúsculas.
+- [x] Atualizar o `makefile`:
   - Na receita `create-explainer`, apontar para `scripts/create_shap_explainer.py` (que suporta argumentos via CLI).
-- [ ] Atualizar testes unitários em `tests/test_unit_functions.py` para testar `preprocess_employee_data`.
+- [x] Atualizar testes unitários em `tests/test_unit_functions.py` para testar `preprocess_employee_data`.
 
 ---
 
