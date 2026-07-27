@@ -8,7 +8,7 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 - [x] **Etapa 1:** Centralizar o Pré-Processamento (Single Source of Truth)
 - [x] **Etapa 2:** Remover Data Leakage de IDs no Modelo (`EmployeeNumber`)
-- [ ] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
+- [x] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
 - [ ] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
 - [ ] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
 - [ ] **Etapa 6:** Validar Todos os Testes Automatizados e Integridade
@@ -38,8 +38,8 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ---
 
-### [ ] Etapa 3: Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
-- [ ] Em `src/attrition/models/tunning.py`, encapsular o resampling e o modelo num pipeline:
+### [x] Etapa 3: Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
+- [x] Em `src/attrition/models/tunning.py`, encapsular o resampling e o modelo num pipeline:
   ```python
   from imblearn.pipeline import Pipeline
   pipeline = Pipeline([
@@ -47,8 +47,8 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
       ('xgb', xgb.XGBClassifier(**params))
   ])
   ```
-- [ ] Rodar o `cross_val_score(pipeline, X_train, y_train, ...)` passando os dados de treino **antes** de qualquer resampling global.
-- [ ] Reduzir o espaço de busca de hiperparâmetros (`max_depth` até 6, `n_estimators` até 500) para evitar overfitting em ~1.400 linhas.
+- [x] Rodar o `cross_val_score(pipeline, X_train, y_train, ...)` passando os dados de treino **antes** de qualquer resampling global.
+- [x] Reduzir o espaço de busca de hiperparâmetros (`max_depth` até 6, `n_estimators` até 500) para evitar overfitting em ~1.400 linhas.
 
 ---
 
