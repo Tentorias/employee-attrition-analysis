@@ -11,7 +11,7 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 - [x] **Etapa 3:** Corrigir Data Leakage na Otimização (Optuna + SMOTEENN)
 - [x] **Etapa 4:** Corrigir Erros Críticos de Script (`run_batch_predictions.py`)
 - [x] **Etapa 5:** Limpar Duplicações e Ajustar Automação (`Makefile` e `seed_database.py`)
-- [ ] **Etapa 6:** Validar Todos os Testes Automatizados e Integridade
+- [x] **Etapa 6:** Validar Todos os Testes Automatizados e Integridade
 
 ---
 
@@ -67,8 +67,8 @@ Este documento serve como um roteiro prático e acompanhamento de tarefas para r
 
 ---
 
-### [ ] Etapa 6: Validação Final e Testes
-- [ ] Rodar `py -3.12 -m pytest tests/ -v` para certificar que os testes unitários passam.
-- [ ] Rodar `py -3.12 scripts/test_architectural_integrity.py` e verificar aprovação 100%.
-- [ ] Testar `py -3.12 src/attrition/main.py run-pipeline` ponta a ponta.
-- [ ] Testar `py -3.12 scripts/run_batch_predictions.py` via banco e API.
+### [x] Etapa 6: Validação Final e Testes
+- [x] Rodar `py -3.12 -m pytest tests/ -v` para certificar que os testes unitários passam.
+- [x] Rodar `py -3.12 scripts/test_architectural_integrity.py` e verificar aprovação 100%.
+- [x] Testar `py -3.12 src/attrition/main.py run-pipeline` ponta a ponta.
+- [x] Testar `py -3.12 scripts/run_batch_predictions.py` via banco e API.
