@@ -34,19 +34,19 @@ try:
     model_features = joblib.load(FEATURES_PATH)
     optimal_threshold = joblib.load(THRESHOLD_PATH)
     engine = create_engine(DATABASE_URL) if DATABASE_URL else None
-    print("✅ Modelo, explicador, lista de features e threshold carregados.")
+    print("[OK] Modelo, explicador, lista de features e threshold carregados.")
     if engine:
-        print("✅ Conexão com o banco de dados estabelecida.")
+        print("[OK] Conexão com o banco de dados estabelecida.")
     else:
         print(
-            "⚠️ Aviso: DATABASE_URL não encontrada. O logging de predições está desativado."
+            "[AVISO] DATABASE_URL não encontrada. O logging de predições está desativado."
         )
 
 except FileNotFoundError as e:
-    print(f"❌ Erro crítico ao carregar artefactos: {e}.")
+    print(f"[ERRO] Erro crítico ao carregar artefactos: {e}.")
     raise
 except Exception as e:
-    print(f"❌ Erro inesperado ao carregar artefactos: {e}.")
+    print(f"[ERRO] Erro inesperado ao carregar artefactos: {e}.")
     raise
 
 
@@ -94,7 +94,7 @@ async def predict(employee_data: EmployeeData):
                     "predictions", con=engine, if_exists="append", index=False
                 )
             except Exception as db_error:
-                print(f"⚠️ Erro ao salvar predição no banco de dados: {db_error}")
+                print(f"[ERRO] Erro ao salvar predição no banco de dados: {db_error}")
 
         return {
             "prediction": prediction,

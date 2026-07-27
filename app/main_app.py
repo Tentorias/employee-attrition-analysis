@@ -114,18 +114,14 @@ if df_model_ready.empty or df_for_ui.empty:
     )
     st.stop()
 
-# --- CONVERTER EMPLOYEE_NUMBER PARA INT EM AMBOS OS DFS E VERIFICAR COLUNA ---
-if (
-    "EmployeeNumber" not in df_model_ready.columns
-    or "EmployeeNumber" not in df_for_ui.columns
-):
+# --- VERIFICAR E CONVERTER EMPLOYEE_NUMBER EM DF_FOR_UI ---
+if "EmployeeNumber" not in df_for_ui.columns:
     st.error(
-        "Coluna 'EmployeeNumber' não encontrada em um dos DataFrames "
+        "Coluna 'EmployeeNumber' não encontrada no DataFrame da interface "
         "após pré-processamento. Verifique data_processing.py."
     )
     st.stop()
 
-df_model_ready["EmployeeNumber"] = df_model_ready["EmployeeNumber"].astype(int)
 df_for_ui["EmployeeNumber"] = df_for_ui["EmployeeNumber"].astype(int)
 
 
@@ -220,51 +216,19 @@ with tab_team:
     else:
         st.info("Nenhum dado para exibir para o departamento selecionado.")
 
-# --- DEBUGGING PRINTS ---
-st.sidebar.subheader("Debug Info")
-st.sidebar.write(f"selected_employee_id: {st.session_state.selected_employee_id}")
-st.sidebar.write(
-    f"type of selected_employee_id: {type(st.session_state.selected_employee_id)}"
-)
-st.sidebar.write(
-    f"df_model_ready['EmployeeNumber'] dtype: {df_model_ready['EmployeeNumber'].dtype}"
-)
-
-id_exists_in_model_df = (
-    st.session_state.selected_employee_id in df_model_ready["EmployeeNumber"].values
-)
-st.sidebar.write(
-    f"Is selected_employee_id in df_model_ready['EmployeeNumber'] values? "
-    f"{id_exists_in_model_df}"
-)
-
-# --- FIM DOS DEBUGGING PRINTS ---
-
-
-filtered_df_model = df_model_ready[
-    df_model_ready["EmployeeNumber"] == st.session_state.selected_employee_id
-]
-
-if not filtered_df_model.empty:
-    employee_data_model = filtered_df_model.iloc[0]
-else:
-    st.error(
-        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "
-        "em df_model_ready para cálculo SHAP. Isso não deveria acontecer. "
-        "Verifique a integridade dos dados e o pipeline de pré-processamento para EmployeeNumber."
-    )
-    st.stop()
-
-
-filtered_df_ui = df_for_ui[
+# --- SELEÇÃO DO FUNCIONÁRIO PARA DIAGNÓSTICO INDIVIDUAL ---
+selected_indices = df_for_ui.index[
     df_for_ui["EmployeeNumber"] == st.session_state.selected_employee_id
 ]
-if not filtered_df_ui.empty:
-    employee_data_ui = filtered_df_ui.iloc[0]
+
+if len(selected_indices) > 0:
+    row_idx = selected_indices[0]
+    employee_data_model = df_model_ready.loc[row_idx]
+    employee_data_ui = df_for_ui.loc[row_idx]
 else:
     st.error(
-        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} não encontrado "
-        "em df_for_ui para exibição. Verifique a integridade dos dados."
+        f"Erro: Funcionário com ID {st.session_state.selected_employee_id} "
+        "não encontrado para exibição."
     )
     st.stop()
 
